@@ -42,38 +42,59 @@ st.markdown("""
         border-bottom: 2px solid var(--secondary-background-color);
         color: var(--text-color);
     }
-    /* Metric cards */
+    /* Metric cards — light mode */
     [data-testid="stMetric"] {
-        background: var(--secondary-background-color);
-        border: 1px solid var(--secondary-background-color);
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
         border-radius: 8px;
         padding: 1rem;
     }
     [data-testid="stMetricLabel"] {
         font-size: 0.85rem;
         font-weight: 500;
-        color: var(--text-color) !important;
     }
-    /* Metric value — force text color for iOS dark mode */
-    [data-testid="stMetricValue"] {
-        color: var(--text-color) !important;
-    }
-    /* Metric delta — ensure visibility on dark backgrounds */
-    [data-testid="stMetricDelta"] {
-        opacity: 0.85;
-    }
-    /* Color-coded metric cards */
+    /* Color-coded metric cards — light mode */
     .metric-green [data-testid="stMetric"] {
         border-left: 4px solid #2e7d32;
-        background: rgba(46, 125, 50, 0.12);
+        background: #e8f5e9;
     }
     .metric-yellow [data-testid="stMetric"] {
         border-left: 4px solid #f9a825;
-        background: rgba(249, 168, 37, 0.12);
+        background: #fff8e1;
     }
     .metric-red [data-testid="stMetric"] {
         border-left: 4px solid #c62828;
-        background: rgba(198, 40, 40, 0.12);
+        background: #ffebee;
+    }
+    /* Dark mode overrides */
+    @media (prefers-color-scheme: dark) {
+        [data-testid="stMetric"] {
+            background: #1e1e1e !important;
+            border: 1px solid #333 !important;
+            color: #fafafa !important;
+        }
+        [data-testid="stMetricLabel"],
+        [data-testid="stMetricValue"] {
+            color: #fafafa !important;
+        }
+        [data-testid="stMetricDelta"] {
+            opacity: 0.9;
+        }
+        .metric-green [data-testid="stMetric"] {
+            background: #1a2e1a !important;
+            border-left: 4px solid #4caf50 !important;
+        }
+        .metric-yellow [data-testid="stMetric"] {
+            background: #2e2a1a !important;
+            border-left: 4px solid #ffca28 !important;
+        }
+        .metric-red [data-testid="stMetric"] {
+            background: #2e1a1a !important;
+            border-left: 4px solid #ef5350 !important;
+        }
+        .section-header {
+            border-bottom-color: #333 !important;
+        }
     }
     /* Alert styling */
     .stAlert {
