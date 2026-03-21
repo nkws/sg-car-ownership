@@ -35,12 +35,12 @@ st.markdown("""
         margin-top: 1.5rem;
         margin-bottom: 0.75rem;
         padding-bottom: 0.4rem;
-        border-bottom: 2px solid #e0e0e0;
+        border-bottom: 2px solid var(--secondary-background-color);
     }
     /* Metric cards */
     [data-testid="stMetric"] {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
+        background: var(--secondary-background-color);
+        border: 1px solid var(--secondary-background-color);
         border-radius: 8px;
         padding: 1rem;
     }
@@ -51,15 +51,15 @@ st.markdown("""
     /* Color-coded metric cards */
     .metric-green [data-testid="stMetric"] {
         border-left: 4px solid #2e7d32;
-        background: #e8f5e9;
+        background: rgba(46, 125, 50, 0.12);
     }
     .metric-yellow [data-testid="stMetric"] {
         border-left: 4px solid #f9a825;
-        background: #fff8e1;
+        background: rgba(249, 168, 37, 0.12);
     }
     .metric-red [data-testid="stMetric"] {
         border-left: 4px solid #c62828;
-        background: #ffebee;
+        background: rgba(198, 40, 40, 0.12);
     }
     /* Alert styling */
     .stAlert {
@@ -72,12 +72,12 @@ st.markdown("""
     /* Term definitions */
     .term-def {
         font-size: 0.82rem;
-        color: #555;
+        color: var(--text-color);
         margin-bottom: 0.3rem;
     }
     .term-label {
         font-weight: 600;
-        color: #333;
+        color: var(--text-color);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -254,6 +254,7 @@ if not coe_df.empty:
         labels={"avg_premium": "Premium ($)", "month": "", "vehicle_class": "Category"},
     )
     fig.update_layout(
+        template="streamlit",
         height=380,
         hovermode="x unified",
         margin=dict(t=20, b=40, l=60, r=20),
@@ -339,6 +340,7 @@ if signal:
                        annotation_position="top left")
 
         fig2.update_layout(
+            template="streamlit",
             yaxis_title="Car Cost as % of Income",
             yaxis_tickformat=".0%",
             barmode="group",
@@ -364,6 +366,7 @@ if not town_df.empty:
             range_color=[25, 50],
         )
         fig3.update_layout(
+            template="streamlit",
             height=480,
             margin=dict(t=20, b=20, l=10, r=10),
             coloraxis_colorbar=dict(title="FSI", thickness=15),
@@ -408,6 +411,7 @@ if not hp_df.empty:
             line=dict(color="#e15759", width=2),
         ))
         fig4.update_layout(
+            template="streamlit",
             yaxis=dict(title="New HP Volume"),
             yaxis2=dict(title="Outstanding ($M)", overlaying="y", side="right"),
             height=380,
@@ -423,6 +427,7 @@ if not hp_df.empty:
         )
         fig5.update_traces(line_color="#f28e2b", line_width=2.5)
         fig5.update_layout(
+            template="streamlit",
             yaxis_title="HP Interest Rate (%)",
             height=380,
             margin=dict(t=20, b=40, l=60, r=20),
