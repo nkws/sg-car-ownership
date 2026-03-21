@@ -22,17 +22,13 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* iOS Safari dark mode: tell the browser to adapt native controls */
-    :root {
-        color-scheme: light dark;
-    }
     /* Tighten top padding */
     .block-container {
         padding-top: 2rem;
         padding-left: 3rem;
         padding-right: 3rem;
     }
-    /* Section spacing */
+    /* Section spacing — uses Streamlit theme variables that auto-switch */
     .section-header {
         font-size: 1.3rem;
         font-weight: 600;
@@ -42,59 +38,33 @@ st.markdown("""
         border-bottom: 2px solid var(--secondary-background-color);
         color: var(--text-color);
     }
-    /* Metric cards — light mode */
+    /* Metric cards — Streamlit variables adapt to light/dark automatically */
     [data-testid="stMetric"] {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
+        background: var(--secondary-background-color);
+        border: 1px solid var(--secondary-background-color);
         border-radius: 8px;
         padding: 1rem;
     }
     [data-testid="stMetricLabel"] {
         font-size: 0.85rem;
         font-weight: 500;
+        color: var(--text-color) !important;
     }
-    /* Color-coded metric cards — light mode */
+    [data-testid="stMetricValue"] {
+        color: var(--text-color) !important;
+    }
+    /* Color-coded metric cards — rgba tints work on any background */
     .metric-green [data-testid="stMetric"] {
-        border-left: 4px solid #2e7d32;
-        background: #e8f5e9;
+        border-left: 4px solid #4caf50;
+        background: rgba(76, 175, 80, 0.15);
     }
     .metric-yellow [data-testid="stMetric"] {
-        border-left: 4px solid #f9a825;
-        background: #fff8e1;
+        border-left: 4px solid #ffca28;
+        background: rgba(255, 202, 40, 0.15);
     }
     .metric-red [data-testid="stMetric"] {
-        border-left: 4px solid #c62828;
-        background: #ffebee;
-    }
-    /* Dark mode overrides */
-    @media (prefers-color-scheme: dark) {
-        [data-testid="stMetric"] {
-            background: #1e1e1e !important;
-            border: 1px solid #333 !important;
-            color: #fafafa !important;
-        }
-        [data-testid="stMetricLabel"],
-        [data-testid="stMetricValue"] {
-            color: #fafafa !important;
-        }
-        [data-testid="stMetricDelta"] {
-            opacity: 0.9;
-        }
-        .metric-green [data-testid="stMetric"] {
-            background: #1a2e1a !important;
-            border-left: 4px solid #4caf50 !important;
-        }
-        .metric-yellow [data-testid="stMetric"] {
-            background: #2e2a1a !important;
-            border-left: 4px solid #ffca28 !important;
-        }
-        .metric-red [data-testid="stMetric"] {
-            background: #2e1a1a !important;
-            border-left: 4px solid #ef5350 !important;
-        }
-        .section-header {
-            border-bottom-color: #333 !important;
-        }
+        border-left: 4px solid #ef5350;
+        background: rgba(239, 83, 80, 0.15);
     }
     /* Alert styling */
     .stAlert {
@@ -103,23 +73,6 @@ st.markdown("""
     /* Consistent chart margins */
     .stPlotlyChart {
         margin-bottom: 0.5rem;
-    }
-    /* Form inputs — force text color for iOS dark mode */
-    [data-testid="stNumberInput"] input,
-    [data-testid="stSelectbox"] select,
-    .stSlider [data-testid="stThumbValue"],
-    .stSlider [data-testid="stTickBarMin"],
-    .stSlider [data-testid="stTickBarMax"] {
-        color: var(--text-color) !important;
-    }
-    /* Number input and selectbox backgrounds */
-    [data-testid="stNumberInput"] input,
-    [data-testid="stSelectbox"] [data-baseweb="select"] {
-        background-color: var(--secondary-background-color) !important;
-    }
-    /* Dataframe text visibility */
-    [data-testid="stDataFrame"] {
-        color: var(--text-color);
     }
     /* Term definitions */
     .term-def {
