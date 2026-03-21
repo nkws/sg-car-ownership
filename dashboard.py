@@ -68,6 +68,27 @@ st.markdown("""
     }
     /* Dark mode overrides */
     @media (prefers-color-scheme: dark) {
+        /* Page background */
+        .stApp, [data-testid="stAppViewContainer"],
+        [data-testid="stHeader"], [data-testid="stToolbar"],
+        .main, .block-container,
+        [data-testid="stAppViewBlockContainer"] {
+            background-color: #0e1117 !important;
+            color: #fafafa !important;
+        }
+        /* Sidebar */
+        [data-testid="stSidebar"],
+        [data-testid="stSidebarContent"] {
+            background-color: #161b22 !important;
+            color: #fafafa !important;
+        }
+        /* All text elements */
+        .stMarkdown, .stMarkdown p, .stMarkdown span,
+        .stCaption, [data-testid="stCaptionContainer"],
+        h1, h2, h3, h4, h5, h6, p, span, label, div {
+            color: #fafafa !important;
+        }
+        /* Metric cards */
         [data-testid="stMetric"] {
             background: #1e1e1e !important;
             border: 1px solid #333 !important;
@@ -92,8 +113,34 @@ st.markdown("""
             background: #2e1a1a !important;
             border-left: 4px solid #ef5350 !important;
         }
+        /* Section headers */
         .section-header {
             border-bottom-color: #333 !important;
+            color: #fafafa !important;
+        }
+        /* Form inputs */
+        [data-testid="stNumberInput"] input,
+        [data-testid="stSelectbox"] [data-baseweb="select"],
+        [data-baseweb="input"] input,
+        [data-baseweb="select"] {
+            background-color: #1e1e1e !important;
+            color: #fafafa !important;
+            border-color: #333 !important;
+        }
+        /* Expander */
+        [data-testid="stExpander"] {
+            border-color: #333 !important;
+        }
+        [data-testid="stExpander"] summary {
+            color: #fafafa !important;
+        }
+        /* Divider */
+        hr {
+            border-color: #333 !important;
+        }
+        /* Captions */
+        .stCaption, [data-testid="stCaptionContainer"] p {
+            color: #aaa !important;
         }
     }
     /* Alert styling */
