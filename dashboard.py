@@ -621,7 +621,19 @@ total_insurance_10yr = insurance * 10
 total_road_tax_10yr = road_tax * 10
 total_petrol_10yr = petrol * 12 * 10
 total_parking_10yr = parking * 12 * 10
-total_maintenance_10yr = maintenance * 12 * 10
+
+# Maintenance: $0 during years 1-3 (warranty + free servicing),
+# then gradually increasing from year 4 as the car ages.
+# Multipliers sum to 10.0 so total ≈ same as 10 years of flat base rate.
+maint_multipliers = {
+    1: 0.0, 2: 0.0, 3: 0.0,       # warranty + free servicing
+    4: 0.8, 5: 1.0, 6: 1.2,       # post-warranty ramp-up
+    7: 1.4, 8: 1.6, 9: 1.8,       # aging wear parts
+    10: 2.2,                        # final year
+}
+maint_yr1_3 = sum(maintenance * maint_multipliers[y] * 12 for y in range(1, 4))   # $0
+maint_yr4_10 = sum(maintenance * maint_multipliers[y] * 12 for y in range(4, 11))
+total_maintenance_10yr = maint_yr1_3 + maint_yr4_10
 
 waterfall_items = [
     ("Vehicle + COE + ARF", total_vehicle_cost, "#4e79a7"),
@@ -630,7 +642,8 @@ waterfall_items = [
     ("Road Tax (10yr)", total_road_tax_10yr, "#edc949"),
     ("Petrol (10yr)", total_petrol_10yr, "#f28e2b"),
     ("Parking (10yr)", total_parking_10yr, "#e15759"),
-    ("Maintenance (10yr)", total_maintenance_10yr, "#b07aa1"),
+    ("Maint (Yr 1-3 warranty)", maint_yr1_3, "#b07aa1"),
+    ("Maint (Yr 4-10 post-warranty)", maint_yr4_10, "#ff9da7"),
 ]
 
 grand_total = sum(v for _, v, _ in waterfall_items)
@@ -654,12 +667,43 @@ fig_wf.update_layout(
 )
 st.plotly_chart(fig_wf, use_container_width=True)
 
-wf1, wf2, wf3 = st.columns(3)
-wf1.metric("10-Year Grand Total", f"${grand_total:,.0f}")
-wf2.metric("Effective Monthly Cost", f"${grand_total / 120:,.0f}",
-           delta=f"${grand_total / 120 / 30:,.0f} / day")
-wf3.metric("Vehicle Depreciation", f"${total_vehicle_cost:,.0f}",
-           delta=f"{total_vehicle_cost / grand_total:.0%} of total cost")
+wf_top1, wf_top2, wf_top3 = st.columns(3)
+wf_top1.metric("10-Year Grand Total", f"${grand_total:,.0f}")
+wf_top2.metric("Effective Monthly Cost", f"${grand_total / 120:,.0f}",
+               delta=f"${grand_total / 120 / 30:,.0f} / day")
+wf_top3.metric("Vehicle Depreciation", f"${total_vehicle_cost:,.0f}",
+               delta=f"{total_vehicle_cost / grand_total:.0%} of total cost")
+
+# Year-by-year maintenance breakdown
+maint_yearly = [{"Year": y, "Annual Cost": maintenance * maint_multipliers[y] * 12,
+                 "Phase": "Warranty" if y <= 3 else "Post-Warranty"}
+                for y in range(1, 11)]
+maint_yr_df = pd.DataFrame(maint_yearly)
+
+wf_m1, wf_m2 = st.columns([3, 2])
+with wf_m1:
+    fig_maint = go.Figure(go.Bar(
+        x=maint_yr_df["Year"], y=maint_yr_df["Annual Cost"],
+        marker_color=["#b07aa1" if y <= 3 else "#ff9da7" for y in range(1, 11)],
+        text=[f"${v:,.0f}" for v in maint_yr_df["Annual Cost"]],
+        textposition="outside",
+    ))
+    fig_maint.update_layout(
+        template="streamlit", height=300,
+        xaxis=dict(title="Year", dtick=1),
+        yaxis_title="Maintenance Cost ($)",
+        margin=dict(t=20, b=40, l=60, r=20),
+        showlegend=False,
+    )
+    st.plotly_chart(fig_maint, use_container_width=True)
+with wf_m2:
+    st.caption("**Maintenance cost profile**")
+    st.caption("Years 1-3: $0 — covered by manufacturer warranty and free servicing package.")
+    st.caption(f"Years 4-10: Gradual increase from "
+               f"${maintenance * maint_multipliers[4] * 12:,.0f}/yr to "
+               f"${maintenance * maint_multipliers[10] * 12:,.0f}/yr as wear parts, "
+               f"battery, suspension, and electronics age.")
+    st.metric("Total Maintenance (10yr)", f"${total_maintenance_10yr:,.0f}")
 
 # ─── Affordability Cliff Analysis ────────────────────────────────────────────
 
