@@ -607,6 +607,510 @@ af2.metric("Cost / Income Ratio", f"{income_ratio:.1%}",
 af3.metric("Remaining After Car", f"${income_input - monthly_total:,.0f} / mo",
            delta=f"{1 - income_ratio:.0%} of income")
 
+# ─── 10-Year Total Cost Waterfall ────────────────────────────────────────────
+
+st.markdown('<div class="section-header">10-Year Cost of Ownership Waterfall</div>',
+            unsafe_allow_html=True)
+st.caption("Cumulative cost breakdown over the full 10-year COE cycle, based on your calculator inputs above.")
+
+# Use calculator values already computed above
+depreciation = total_vehicle_cost  # car is worth $0 at end of 10-year COE
+total_loan_payments = monthly_loan * tenure_months
+total_interest_paid = total_interest
+total_insurance_10yr = insurance * 10
+total_road_tax_10yr = road_tax * 10
+total_petrol_10yr = petrol * 12 * 10
+total_parking_10yr = parking * 12 * 10
+total_maintenance_10yr = maintenance * 12 * 10
+
+waterfall_items = [
+    ("Vehicle + COE + ARF", total_vehicle_cost, "#4e79a7"),
+    ("Loan Interest", total_interest_paid, "#76b7b2"),
+    ("Insurance (10yr)", total_insurance_10yr, "#59a14f"),
+    ("Road Tax (10yr)", total_road_tax_10yr, "#edc949"),
+    ("Petrol (10yr)", total_petrol_10yr, "#f28e2b"),
+    ("Parking (10yr)", total_parking_10yr, "#e15759"),
+    ("Maintenance (10yr)", total_maintenance_10yr, "#b07aa1"),
+]
+
+grand_total = sum(v for _, v, _ in waterfall_items)
+
+fig_wf = go.Figure(go.Waterfall(
+    x=[name for name, _, _ in waterfall_items] + ["TOTAL (10yr)"],
+    y=[val for _, val, _ in waterfall_items] + [0],
+    measure=["relative"] * len(waterfall_items) + ["total"],
+    text=[f"${v:,.0f}" for _, v, _ in waterfall_items] + [f"${grand_total:,.0f}"],
+    textposition="outside",
+    connector=dict(line=dict(color="rgba(128,128,128,0.3)")),
+    increasing=dict(marker=dict(color="#4e79a7")),
+    totals=dict(marker=dict(color="#e15759")),
+))
+fig_wf.update_layout(
+    template="streamlit",
+    height=420,
+    margin=dict(t=20, b=60, l=60, r=20),
+    yaxis_title="Cumulative Cost ($)",
+    showlegend=False,
+)
+st.plotly_chart(fig_wf, use_container_width=True)
+
+wf1, wf2, wf3 = st.columns(3)
+wf1.metric("10-Year Grand Total", f"${grand_total:,.0f}")
+wf2.metric("Effective Monthly Cost", f"${grand_total / 120:,.0f}",
+           delta=f"${grand_total / 120 / 30:,.0f} / day")
+wf3.metric("Vehicle Depreciation", f"${total_vehicle_cost:,.0f}",
+           delta=f"{total_vehicle_cost / grand_total:.0%} of total cost")
+
+# ─── Affordability Cliff Analysis ────────────────────────────────────────────
+
+st.markdown('<div class="section-header">Affordability Cliff Analysis</div>',
+            unsafe_allow_html=True)
+st.caption("At what COE level does each dwelling type tip into a worse stress segment? "
+           "Shows the breaking points where car ownership becomes unaffordable.")
+
+if signal and car_costs:
+    from models.ratio_model import calculate_monthly_car_cost
+
+    income_df_cliff = load_income_segments()
+    if not income_df_cliff.empty:
+        dwelling_incomes = income_df_cliff.groupby("dwelling_type")["median_income"].first()
+        dwelling_incomes = dwelling_incomes[dwelling_incomes > 0].sort_values()
+
+        # Test COE range from 50k to 200k
+        coe_range = list(range(50000, 205000, 5000))
+        cliff_data = []
+
+        for dwelling, income in dwelling_incomes.items():
+            for coe_val in coe_range:
+                cost = calculate_monthly_car_cost("cat_a", coe_override=coe_val)
+                ratio = cost["monthly_total"] / income
+                cliff_data.append({
+                    "Dwelling Type": dwelling,
+                    "COE Premium": coe_val,
+                    "Monthly Cost": cost["monthly_total"],
+                    "Cost/Income Ratio": ratio,
+                    "Income": income,
+                })
+
+        cliff_df = pd.DataFrame(cliff_data)
+
+        fig_cliff = go.Figure()
+        colors = ["#4e79a7", "#59a14f", "#76b7b2", "#f28e2b", "#e15759", "#b07aa1"]
+        for i, dwelling in enumerate(dwelling_incomes.index):
+            dw_data = cliff_df[cliff_df["Dwelling Type"] == dwelling]
+            fig_cliff.add_trace(go.Scatter(
+                x=dw_data["COE Premium"], y=dw_data["Cost/Income Ratio"],
+                name=dwelling, mode="lines",
+                line=dict(color=colors[i % len(colors)], width=2),
+                hovertemplate=(
+                    f"<b>{dwelling}</b><br>"
+                    "COE: $%{x:,.0f}<br>"
+                    "Ratio: %{y:.0%}<br>"
+                    "<extra></extra>"
+                ),
+            ))
+
+        # Threshold lines
+        fig_cliff.add_hline(y=0.25, line_dash="dot", line_color="gray",
+                            annotation_text="Stretched (25%)", annotation_position="top left")
+        fig_cliff.add_hline(y=0.35, line_dash="dash", line_color="#f28e2b",
+                            annotation_text="Stressed (35%)", annotation_position="top left")
+        fig_cliff.add_hline(y=0.50, line_dash="dash", line_color="#e15759",
+                            annotation_text="Distressed (50%)", annotation_position="top left")
+
+        fig_cliff.update_layout(
+            template="streamlit",
+            height=450,
+            xaxis_title="COE Premium ($)",
+            yaxis_title="Car Cost as % of Income",
+            yaxis_tickformat=".0%",
+            hovermode="x unified",
+            margin=dict(t=20, b=40, l=60, r=20),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+        )
+        st.plotly_chart(fig_cliff, use_container_width=True)
+
+        # Show cliff points table
+        st.markdown("**Breaking points** — COE level where each dwelling type crosses thresholds:")
+        cliff_table = []
+        thresholds = [("Stretched (25%)", 0.25), ("Stressed (35%)", 0.35), ("Distressed (50%)", 0.50)]
+        for dwelling, income in dwelling_incomes.items():
+            row = {"Dwelling Type": dwelling, "Median Income": f"${income:,.0f}"}
+            dw_data = cliff_df[cliff_df["Dwelling Type"] == dwelling].sort_values("COE Premium")
+            for label, thresh in thresholds:
+                crossing = dw_data[dw_data["Cost/Income Ratio"] >= thresh]
+                if not crossing.empty:
+                    row[label] = f"${crossing.iloc[0]['COE Premium']:,.0f}"
+                else:
+                    row[label] = "Above $200k"
+            cliff_table.append(row)
+        st.dataframe(pd.DataFrame(cliff_table), use_container_width=True, hide_index=True)
+
+# ─── Forced-Sale / Default Risk Proxy ────────────────────────────────────────
+
+st.markdown('<div class="section-header">Forced-Sale / Default Risk Proxy</div>',
+            unsafe_allow_html=True)
+st.caption("When HP outstanding rises but new HP volume falls, existing borrowers may be "
+           "struggling while new buyers are priced out — a leading indicator of distressed car sales.")
+
+hp_df_risk = load_hp_data()
+if not hp_df_risk.empty and len(hp_df_risk) >= 4:
+    hp_df_risk = hp_df_risk.sort_values(["year", "quarter"]).reset_index(drop=True)
+
+    # Calculate quarter-over-quarter changes
+    hp_df_risk["vol_change"] = hp_df_risk["new_hp_volume"].pct_change()
+    hp_df_risk["outstanding_change"] = hp_df_risk["outstanding_m"].pct_change()
+
+    # Risk signal: outstanding growing while volume shrinking
+    hp_df_risk["risk_signal"] = (
+        (hp_df_risk["outstanding_change"] > 0) & (hp_df_risk["vol_change"] < 0)
+    ).astype(int)
+
+    # Divergence metric (positive = risk divergence)
+    hp_df_risk["divergence"] = hp_df_risk["outstanding_change"] - hp_df_risk["vol_change"]
+
+    fig_risk = go.Figure()
+
+    # Volume change bars
+    colors_vol = ["#e15759" if v < 0 else "#59a14f" for v in hp_df_risk["vol_change"].fillna(0)]
+    fig_risk.add_trace(go.Bar(
+        name="New HP Volume Change",
+        x=hp_df_risk["period"], y=hp_df_risk["vol_change"],
+        marker_color=colors_vol,
+        yaxis="y",
+    ))
+
+    # Outstanding change line
+    fig_risk.add_trace(go.Scatter(
+        name="Outstanding HP Change",
+        x=hp_df_risk["period"], y=hp_df_risk["outstanding_change"],
+        line=dict(color="#4e79a7", width=2.5),
+        yaxis="y",
+    ))
+
+    # Risk markers
+    risk_periods = hp_df_risk[hp_df_risk["risk_signal"] == 1]
+    if not risk_periods.empty:
+        fig_risk.add_trace(go.Scatter(
+            name="Risk Signal",
+            x=risk_periods["period"], y=risk_periods["outstanding_change"],
+            mode="markers",
+            marker=dict(color="#e15759", size=12, symbol="triangle-up",
+                        line=dict(width=1, color="white")),
+        ))
+
+    fig_risk.update_layout(
+        template="streamlit",
+        height=380,
+        yaxis=dict(title="Quarter-over-Quarter Change", tickformat=".0%"),
+        margin=dict(t=20, b=40, l=60, r=20),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+        hovermode="x unified",
+    )
+    st.plotly_chart(fig_risk, use_container_width=True)
+
+    # Summary metrics
+    latest = hp_df_risk.iloc[-1]
+    dr1, dr2, dr3 = st.columns(3)
+    dr1.metric("Latest HP Volume Trend",
+               f"{latest['vol_change']:+.1%}" if pd.notna(latest['vol_change']) else "N/A")
+    dr2.metric("Outstanding HP Trend",
+               f"{latest['outstanding_change']:+.1%}" if pd.notna(latest['outstanding_change']) else "N/A")
+    risk_count = int(hp_df_risk["risk_signal"].sum())
+    dr3.metric("Risk Signals (total)", f"{risk_count} / {len(hp_df_risk)}",
+               delta="Divergence detected" if latest.get("risk_signal", 0) == 1 else "No current divergence")
+else:
+    st.info("Insufficient hire purchase data for risk analysis.")
+
+# ─── Real Income Erosion Over Time ───────────────────────────────────────────
+
+st.markdown('<div class="section-header">Real Income Erosion — COE Growth vs Wage Growth</div>',
+            unsafe_allow_html=True)
+st.caption("Compares COE premium growth against wage growth. A widening gap means car ownership "
+           "is becoming structurally less affordable over time, regardless of current levels.")
+
+coe_erosion_df = load_coe_history()
+if not coe_erosion_df.empty:
+    # Annual average COE premium (Cat A)
+    coe_annual = coe_erosion_df[coe_erosion_df["vehicle_class"] == "Category A"].copy()
+    coe_annual["year"] = coe_annual["month"].str[:4].astype(int)
+    coe_yearly = coe_annual.groupby("year")["avg_premium"].mean().reset_index()
+    coe_yearly.columns = ["year", "avg_coe"]
+
+    # Wage data: CPF median wage proxy + vehicle population for normalisation
+    # Use hardcoded SG median wage trend (DOS data)
+    wage_trend = pd.DataFrame({
+        "year": [2020, 2021, 2022, 2023, 2024],
+        "median_wage": [4534, 4680, 5070, 5197, 5500],  # DOS median gross monthly income
+    })
+
+    # Merge and index to first available year
+    erosion = coe_yearly.merge(wage_trend, on="year", how="inner")
+    if len(erosion) >= 2:
+        base_coe = erosion.iloc[0]["avg_coe"]
+        base_wage = erosion.iloc[0]["median_wage"]
+        erosion["coe_index"] = (erosion["avg_coe"] / base_coe) * 100
+        erosion["wage_index"] = (erosion["median_wage"] / base_wage) * 100
+        erosion["gap"] = erosion["coe_index"] - erosion["wage_index"]
+
+        fig_erosion = go.Figure()
+        fig_erosion.add_trace(go.Scatter(
+            name="COE Premium (Cat A)", x=erosion["year"], y=erosion["coe_index"],
+            line=dict(color="#e15759", width=2.5),
+            fill="tonexty" if len(erosion) > 2 else None,
+        ))
+        fig_erosion.add_trace(go.Scatter(
+            name="Median Wage", x=erosion["year"], y=erosion["wage_index"],
+            line=dict(color="#4e79a7", width=2.5),
+        ))
+        fig_erosion.add_trace(go.Bar(
+            name="Affordability Gap", x=erosion["year"], y=erosion["gap"],
+            marker_color="rgba(225, 87, 89, 0.3)",
+            yaxis="y2",
+        ))
+
+        fig_erosion.update_layout(
+            template="streamlit",
+            height=400,
+            yaxis=dict(title="Index (base year = 100)"),
+            yaxis2=dict(title="Gap (index pts)", overlaying="y", side="right"),
+            margin=dict(t=20, b=40, l=60, r=60),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+            hovermode="x unified",
+        )
+        st.plotly_chart(fig_erosion, use_container_width=True)
+
+        # Summary
+        latest_gap = erosion.iloc[-1]
+        coe_cagr = ((erosion.iloc[-1]["avg_coe"] / base_coe) ** (1 / max(len(erosion) - 1, 1)) - 1)
+        wage_cagr = ((erosion.iloc[-1]["median_wage"] / base_wage) ** (1 / max(len(erosion) - 1, 1)) - 1)
+
+        er1, er2, er3 = st.columns(3)
+        er1.metric("COE CAGR", f"{coe_cagr:.1%}", delta=f"Since {int(erosion.iloc[0]['year'])}")
+        er2.metric("Wage CAGR", f"{wage_cagr:.1%}", delta=f"Since {int(erosion.iloc[0]['year'])}")
+        er3.metric("Erosion Rate", f"{coe_cagr - wage_cagr:+.1%} p.a.",
+                   delta="COE outpacing wages" if coe_cagr > wage_cagr else "Wages catching up")
+    else:
+        st.info("Need at least 2 years of overlapping COE and wage data.")
+else:
+    st.info("No COE history data available.")
+
+# ─── Regional Inequality Score ───────────────────────────────────────────────
+
+st.markdown('<div class="section-header">Regional Inequality — Car Ownership Burden</div>',
+            unsafe_allow_html=True)
+st.caption("Measures how unevenly the financial burden of car ownership falls across towns. "
+           "A higher Gini coefficient means greater inequality.")
+
+town_df_ineq = load_town_profiles()
+if not town_df_ineq.empty and "car_cost_ratio" in town_df_ineq.columns:
+    ratios = town_df_ineq["car_cost_ratio"].dropna().sort_values().values
+
+    # Calculate Gini coefficient
+    n = len(ratios)
+    if n >= 2:
+        cumulative = ratios.cumsum()
+        gini = (2 * sum((i + 1) * ratios[i] for i in range(n)) - (n + 1) * ratios.sum()) / (n * ratios.sum())
+        gini = round(abs(gini), 3)
+
+        # Lorenz curve data
+        lorenz_x = [0] + [(i + 1) / n for i in range(n)]
+        lorenz_y = [0] + list(cumulative / cumulative[-1])
+
+        gi1, gi2 = st.columns([3, 2])
+
+        with gi1:
+            fig_lorenz = go.Figure()
+            fig_lorenz.add_trace(go.Scatter(
+                x=lorenz_x, y=lorenz_y, name="Actual Distribution",
+                fill="toself", fillcolor="rgba(78, 121, 167, 0.2)",
+                line=dict(color="#4e79a7", width=2),
+            ))
+            fig_lorenz.add_trace(go.Scatter(
+                x=[0, 1], y=[0, 1], name="Perfect Equality",
+                line=dict(color="gray", width=1, dash="dash"),
+            ))
+            fig_lorenz.update_layout(
+                template="streamlit",
+                height=380,
+                xaxis_title="Cumulative Share of Towns",
+                yaxis_title="Cumulative Share of Cost/Income Burden",
+                margin=dict(t=20, b=40, l=60, r=20),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+            )
+            st.plotly_chart(fig_lorenz, use_container_width=True)
+
+        with gi2:
+            st.metric("Gini Coefficient", f"{gini:.3f}",
+                      delta="Higher = more unequal")
+
+            # Range stats
+            st.metric("Most Affordable Town",
+                      town_df_ineq.loc[town_df_ineq["car_cost_ratio"].idxmin(), "town"],
+                      delta=f"Ratio: {ratios[0]:.1%}")
+            st.metric("Least Affordable Town",
+                      town_df_ineq.loc[town_df_ineq["car_cost_ratio"].idxmax(), "town"],
+                      delta=f"Ratio: {ratios[-1]:.1%}")
+
+            spread = ratios[-1] / max(ratios[0], 0.01)
+            st.metric("Spread (max / min)", f"{spread:.1f}x",
+                      delta=f"{ratios[-1]:.0%} vs {ratios[0]:.0%}")
+    else:
+        st.info("Need at least 2 towns for inequality analysis.")
+else:
+    st.info("No town profile data available.")
+
+# ─── Own vs Ride-Hail Break-Even ─────────────────────────────────────────────
+
+st.markdown('<div class="section-header">Own vs Ride-Hail Break-Even</div>',
+            unsafe_allow_html=True)
+st.caption("At what monthly ride-hail spend does owning a car become cheaper? "
+           "Based on your calculator inputs above.")
+
+# Average ride-hail cost assumptions for SG
+ride_cost_per_trip = st.slider(
+    "Average ride-hail cost per trip ($)", 10.0, 30.0, 15.0, 1.0,
+    help="Average Grab/taxi fare for a typical trip in Singapore"
+)
+
+# Monthly car cost already calculated: monthly_total
+# Break-even: monthly_total / ride_cost_per_trip = trips per month
+breakeven_trips = monthly_total / ride_cost_per_trip
+breakeven_daily = breakeven_trips / 30
+
+# Generate comparison data
+trips_range = list(range(0, 201, 5))
+comparison_data = []
+for trips in trips_range:
+    ride_cost = trips * ride_cost_per_trip
+    comparison_data.append({
+        "Trips / Month": trips,
+        "Ride-Hail Cost": ride_cost,
+        "Car Ownership Cost": monthly_total,
+    })
+comp_df = pd.DataFrame(comparison_data)
+
+rh1, rh2 = st.columns([3, 2])
+
+with rh1:
+    fig_rh = go.Figure()
+    fig_rh.add_trace(go.Scatter(
+        x=comp_df["Trips / Month"], y=comp_df["Ride-Hail Cost"],
+        name="Ride-Hail (Grab/Taxi)", line=dict(color="#59a14f", width=2.5),
+    ))
+    fig_rh.add_trace(go.Scatter(
+        x=comp_df["Trips / Month"], y=comp_df["Car Ownership Cost"],
+        name="Car Ownership", line=dict(color="#e15759", width=2.5),
+    ))
+    fig_rh.add_vline(x=breakeven_trips, line_dash="dash", line_color="#f28e2b",
+                     annotation_text=f"Break-even: {breakeven_trips:.0f} trips/mo",
+                     annotation_position="top left")
+    fig_rh.update_layout(
+        template="streamlit",
+        height=380,
+        xaxis_title="Trips per Month",
+        yaxis_title="Monthly Cost ($)",
+        margin=dict(t=20, b=40, l=60, r=20),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+        hovermode="x unified",
+    )
+    st.plotly_chart(fig_rh, use_container_width=True)
+
+with rh2:
+    st.metric("Break-Even Point", f"{breakeven_trips:.0f} trips / month",
+              delta=f"~{breakeven_daily:.1f} trips / day")
+    st.metric("Your Car Cost", f"${monthly_total:,.0f} / mo")
+    st.metric("Equivalent Ride-Hail", f"{breakeven_trips:.0f} × ${ride_cost_per_trip:.0f}",
+              delta=f"= ${breakeven_trips * ride_cost_per_trip:,.0f}/mo")
+
+    if breakeven_daily > 4:
+        st.success("Ride-hail is likely more cost-effective for most people.")
+    elif breakeven_daily > 2:
+        st.warning("Car ownership is only cheaper if you drive frequently (3-4+ trips/day).")
+    else:
+        st.info("Car ownership is competitive at typical usage levels.")
+
+# ─── FSI Weight Backtester ───────────────────────────────────────────────────
+
+st.markdown('<div class="section-header">FSI Weight Backtester</div>',
+            unsafe_allow_html=True)
+st.caption("Tests all weight combinations against historical stress periods to find "
+           "the most predictive composite. Stress months are identified by premiums "
+           "exceeding 1 standard deviation above rolling mean.")
+
+@st.cache_data(ttl=600)
+def run_backtest():
+    from models.fsi_backtest import backtest_weights
+    return backtest_weights(step=5)
+
+backtest = run_backtest()
+
+if backtest.get("message"):
+    st.info(backtest["message"])
+else:
+    opt_w = backtest["optimal_weights"]
+    def_w = backtest["default_weights"]
+
+    bt1, bt2, bt3, bt4 = st.columns(4)
+    bt1.metric("Optimal COE Weight", f"{opt_w['coe']:.0%}",
+               delta=f"vs default {def_w['coe']:.0%}")
+    bt2.metric("Optimal Credit Weight", f"{opt_w['credit']:.0%}",
+               delta=f"vs default {def_w['credit']:.0%}")
+    bt3.metric("Optimal Market Weight", f"{opt_w['market']:.0%}",
+               delta=f"vs default {def_w['market']:.0%}")
+    bt4.metric("Separation Improvement", f"{backtest['improvement_pct']:+.1f}%",
+               delta=f"Gap: {backtest['optimal_gap']:.1f} vs {backtest['default_gap']:.1f}")
+
+    # Chart: FSI over time with optimal vs default weights
+    score_hist = backtest.get("score_history")
+    if score_hist is not None and not score_hist.empty:
+        bt_chart, bt_table = st.columns([3, 2])
+
+        with bt_chart:
+            fig_bt = go.Figure()
+            fig_bt.add_trace(go.Scatter(
+                x=score_hist["month"], y=score_hist["fsi_optimal"],
+                name=f"Optimal ({opt_w['coe']:.0%}/{opt_w['credit']:.0%}/{opt_w['market']:.0%})",
+                line=dict(color="#4e79a7", width=2),
+            ))
+            fig_bt.add_trace(go.Scatter(
+                x=score_hist["month"], y=score_hist["fsi_default"],
+                name="Default (40/30/30)",
+                line=dict(color="gray", width=1.5, dash="dot"),
+            ))
+            # Shade stress periods
+            stress_months_bt = score_hist[score_hist["is_stress"] == 1]
+            if not stress_months_bt.empty:
+                fig_bt.add_trace(go.Scatter(
+                    x=stress_months_bt["month"], y=stress_months_bt["fsi_optimal"],
+                    name="Stress Period", mode="markers",
+                    marker=dict(color="#e15759", size=8, symbol="diamond"),
+                ))
+
+            fig_bt.update_layout(
+                template="streamlit",
+                height=380,
+                yaxis_title="FSI Score",
+                margin=dict(t=20, b=40, l=60, r=20),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+                hovermode="x unified",
+            )
+            st.plotly_chart(fig_bt, use_container_width=True)
+
+        with bt_table:
+            st.markdown("**Top 5 Weight Combinations**")
+            top5 = backtest.get("top_5", [])
+            if top5:
+                top5_df = pd.DataFrame(top5)
+                top5_df.columns = ["COE", "Credit", "Market", "Stress FSI", "Calm FSI", "Gap"]
+                top5_df["COE"] = top5_df["COE"].apply(lambda x: f"{x:.0%}")
+                top5_df["Credit"] = top5_df["Credit"].apply(lambda x: f"{x:.0%}")
+                top5_df["Market"] = top5_df["Market"].apply(lambda x: f"{x:.0%}")
+                st.dataframe(top5_df, use_container_width=True, hide_index=True)
+
+            st.caption(f"Tested {backtest['total_months']} months: "
+                       f"{backtest['stress_count']} stress, {backtest['calm_count']} calm")
+
 # ─── Footer ──────────────────────────────────────────────────────────────────
 
 st.markdown("")  # spacer
