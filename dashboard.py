@@ -22,6 +22,10 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+    /* iOS Safari dark mode: tell the browser to adapt native controls */
+    :root {
+        color-scheme: light dark;
+    }
     /* Tighten top padding */
     .block-container {
         padding-top: 2rem;
@@ -36,6 +40,7 @@ st.markdown("""
         margin-bottom: 0.75rem;
         padding-bottom: 0.4rem;
         border-bottom: 2px solid var(--secondary-background-color);
+        color: var(--text-color);
     }
     /* Metric cards */
     [data-testid="stMetric"] {
@@ -47,6 +52,15 @@ st.markdown("""
     [data-testid="stMetricLabel"] {
         font-size: 0.85rem;
         font-weight: 500;
+        color: var(--text-color) !important;
+    }
+    /* Metric value — force text color for iOS dark mode */
+    [data-testid="stMetricValue"] {
+        color: var(--text-color) !important;
+    }
+    /* Metric delta — ensure visibility on dark backgrounds */
+    [data-testid="stMetricDelta"] {
+        opacity: 0.85;
     }
     /* Color-coded metric cards */
     .metric-green [data-testid="stMetric"] {
@@ -68,6 +82,23 @@ st.markdown("""
     /* Consistent chart margins */
     .stPlotlyChart {
         margin-bottom: 0.5rem;
+    }
+    /* Form inputs — force text color for iOS dark mode */
+    [data-testid="stNumberInput"] input,
+    [data-testid="stSelectbox"] select,
+    .stSlider [data-testid="stThumbValue"],
+    .stSlider [data-testid="stTickBarMin"],
+    .stSlider [data-testid="stTickBarMax"] {
+        color: var(--text-color) !important;
+    }
+    /* Number input and selectbox backgrounds */
+    [data-testid="stNumberInput"] input,
+    [data-testid="stSelectbox"] [data-baseweb="select"] {
+        background-color: var(--secondary-background-color) !important;
+    }
+    /* Dataframe text visibility */
+    [data-testid="stDataFrame"] {
+        color: var(--text-color);
     }
     /* Term definitions */
     .term-def {
