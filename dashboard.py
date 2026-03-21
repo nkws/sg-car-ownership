@@ -10,7 +10,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import json
 from database import get_conn, init_db
-from config import SIGNAL_FILE, SEGMENT_THRESHOLDS
+from config import SIGNAL_FILE, DB_PATH, SEGMENT_THRESHOLDS
 
 st.set_page_config(
     page_title="SG Car Ownership — Financial Stress Dashboard",
@@ -85,7 +85,15 @@ st.markdown("""
 # ─── Load Data ───────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=300)
+def ensure_data():
+    """Auto-run pipeline if no data exists (e.g. fresh deployment)."""
+    if not SIGNAL_FILE.exists() or not DB_PATH.exists():
+        from run_pipeline import main as run_pipeline
+        run_pipeline()
+
+@st.cache_data(ttl=300)
 def load_signal():
+    ensure_data()
     if SIGNAL_FILE.exists():
         with open(SIGNAL_FILE) as f:
             return json.load(f)
