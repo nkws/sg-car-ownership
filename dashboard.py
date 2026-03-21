@@ -464,6 +464,139 @@ if coe_mult != 1.0 or rate_add != 0.0:
 else:
     st.info("Adjust the sliders above to run a stress scenario.")
 
+# ─── Car Cost Calculator ─────────────────────────────────────────────────────
+
+st.markdown('<div class="section-header">Car Cost Calculator</div>',
+            unsafe_allow_html=True)
+st.caption("Estimate your total cost of car ownership in Singapore. All inputs use flat rates as quoted by dealers.")
+
+st.markdown("")  # spacer
+
+from models.ratio_model import flat_to_eir
+
+calc1, calc2, calc3 = st.columns(3)
+
+with calc1:
+    vehicle_price = st.number_input("Vehicle Price (OMV + dealer)", min_value=30000, max_value=500000,
+                                     value=80000, step=5000, format="%d",
+                                     help="Open Market Value + dealer markup, before COE")
+    coe_premium = st.number_input("COE Premium", min_value=0, max_value=300000,
+                                   value=100000, step=5000, format="%d")
+    arf_pct = st.slider("ARF (% of OMV)", 100, 220, 100, 10,
+                         help="Additional Registration Fee. 100% for first $20k OMV, tiered above that. Use 100% as default estimate.")
+
+with calc2:
+    downpayment_pct = st.slider("Downpayment (%)", 30, 100, 40, 5,
+                                 help="Minimum 30% for cars in SG (MAS regulation since 2016)")
+    loan_tenure = st.selectbox("Loan Tenure", [5, 6, 7], index=2,
+                                help="Maximum 7 years in SG",
+                                format_func=lambda x: f"{x} years")
+    flat_rate = st.number_input("Flat Rate (% p.a.)", min_value=0.0, max_value=10.0,
+                                 value=2.78, step=0.1, format="%.2f",
+                                 help="Advertised flat rate from dealer/bank. NOT the effective interest rate (EIR).")
+
+with calc3:
+    insurance = st.number_input("Insurance ($/yr)", min_value=0, max_value=10000,
+                                 value=1800, step=100, format="%d")
+    road_tax = st.number_input("Road Tax ($/yr)", min_value=0, max_value=5000,
+                                value=742, step=50, format="%d")
+    petrol = st.number_input("Petrol ($/mo)", min_value=0, max_value=1500,
+                              value=300, step=25, format="%d")
+    parking = st.number_input("Parking ($/mo)", min_value=0, max_value=1000,
+                               value=110, step=10, format="%d",
+                               help="HDB season parking ~$110, condo ~$0 (included), CBD ~$300+")
+    maintenance = st.number_input("Maintenance ($/mo)", min_value=0, max_value=1000,
+                                   value=150, step=25, format="%d",
+                                   help="Servicing, tyres, repairs averaged monthly")
+
+st.markdown("")  # spacer
+
+# Calculate
+arf = vehicle_price * (arf_pct / 100)
+total_vehicle_cost = vehicle_price + coe_premium + arf
+loan_amount = total_vehicle_cost * (1 - downpayment_pct / 100)
+downpayment_amount = total_vehicle_cost * (downpayment_pct / 100)
+tenure_months = loan_tenure * 12
+flat_rate_decimal = flat_rate / 100
+
+# Flat rate loan calculation
+total_interest = loan_amount * flat_rate_decimal * loan_tenure
+monthly_loan = (loan_amount + total_interest) / tenure_months
+eir = flat_to_eir(flat_rate_decimal, loan_tenure)
+
+monthly_insurance = insurance / 12
+monthly_road_tax = road_tax / 12
+monthly_total = monthly_loan + monthly_insurance + monthly_road_tax + petrol + parking + maintenance
+
+# 10-year total cost (loan period + 3 years of running costs only)
+total_loan_period_cost = (monthly_total * tenure_months) + downpayment_amount
+running_cost_monthly = monthly_insurance + monthly_road_tax + petrol + parking + maintenance
+remaining_months = max(0, 120 - tenure_months)  # rest of 10-year COE
+total_10yr = total_loan_period_cost + (running_cost_monthly * remaining_months)
+
+# Display results
+st.markdown('<div class="section-header">Cost Breakdown</div>', unsafe_allow_html=True)
+
+r1, r2, r3, r4 = st.columns(4)
+r1.metric("Total Vehicle Cost", f"${total_vehicle_cost:,.0f}",
+          delta=f"Downpayment: ${downpayment_amount:,.0f}")
+r2.metric("Monthly Repayment", f"${monthly_loan:,.0f}",
+          delta=f"Flat {flat_rate:.2f}% → EIR {eir:.2%}")
+r3.metric("Total Monthly Cost", f"${monthly_total:,.0f}",
+          delta=f"${monthly_total * 12:,.0f} / year")
+r4.metric("10-Year Total Cost", f"${total_10yr:,.0f}",
+          delta=f"${total_10yr / 120:,.0f} / month avg")
+
+st.markdown("")  # spacer
+
+# Detailed breakdown table
+breakdown_data = {
+    "Component": ["Loan Repayment", "Insurance", "Road Tax", "Petrol", "Parking",
+                   "Maintenance", "**Total**"],
+    "Monthly": [f"${monthly_loan:,.0f}", f"${monthly_insurance:,.0f}", f"${monthly_road_tax:,.0f}",
+                f"${petrol:,.0f}", f"${parking:,.0f}", f"${maintenance:,.0f}",
+                f"**${monthly_total:,.0f}**"],
+    "Annual": [f"${monthly_loan * 12:,.0f}", f"${insurance:,.0f}", f"${road_tax:,.0f}",
+               f"${petrol * 12:,.0f}", f"${parking * 12:,.0f}", f"${maintenance * 12:,.0f}",
+               f"**${monthly_total * 12:,.0f}**"],
+    "% of Total": [f"{monthly_loan / monthly_total:.0%}", f"{monthly_insurance / monthly_total:.0%}",
+                    f"{monthly_road_tax / monthly_total:.0%}", f"{petrol / monthly_total:.0%}",
+                    f"{parking / monthly_total:.0%}", f"{maintenance / monthly_total:.0%}",
+                    "**100%**"],
+}
+st.dataframe(pd.DataFrame(breakdown_data), use_container_width=True, hide_index=True)
+
+st.markdown("")  # spacer
+
+# Affordability check
+st.markdown('<div class="section-header">Affordability Check</div>', unsafe_allow_html=True)
+st.caption("Enter your household income to see where you fall on the stress scale.")
+
+income_input = st.number_input("Gross Monthly Household Income ($)", min_value=1000,
+                                max_value=100000, value=8000, step=500, format="%d")
+
+income_ratio = monthly_total / income_input
+if income_ratio < 0.15:
+    seg_label, seg_color = "A — Affluent", "green"
+elif income_ratio < 0.25:
+    seg_label, seg_color = "B — Comfortable", "green"
+elif income_ratio < 0.35:
+    seg_label, seg_color = "C — Stretched", "yellow"
+elif income_ratio < 0.50:
+    seg_label, seg_color = "D — Stressed", "red"
+else:
+    seg_label, seg_color = "E — Distressed", "red"
+
+af1, af2, af3 = st.columns(3)
+with af1:
+    st.markdown(f'<div class="metric-{seg_color}">', unsafe_allow_html=True)
+    st.metric("Your Segment", seg_label)
+    st.markdown('</div>', unsafe_allow_html=True)
+af2.metric("Cost / Income Ratio", f"{income_ratio:.1%}",
+           delta="Healthy" if income_ratio < 0.25 else "Stretched" if income_ratio < 0.35 else "Unsustainable")
+af3.metric("Remaining After Car", f"${income_input - monthly_total:,.0f} / mo",
+           delta=f"{1 - income_ratio:.0%} of income")
+
 # ─── Footer ──────────────────────────────────────────────────────────────────
 
 st.markdown("")  # spacer
