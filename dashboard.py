@@ -22,6 +22,10 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+    /* iOS Safari dark mode: tell the browser to adapt native controls */
+    :root {
+        color-scheme: light dark;
+    }
     /* Tighten top padding */
     .block-container {
         padding-top: 2rem;
@@ -35,9 +39,10 @@ st.markdown("""
         margin-top: 1.5rem;
         margin-bottom: 0.75rem;
         padding-bottom: 0.4rem;
-        border-bottom: 2px solid #e0e0e0;
+        border-bottom: 2px solid var(--secondary-background-color);
+        color: var(--text-color);
     }
-    /* Metric cards */
+    /* Metric cards — light mode */
     [data-testid="stMetric"] {
         background: #f8f9fa;
         border: 1px solid #e9ecef;
@@ -48,7 +53,7 @@ st.markdown("""
         font-size: 0.85rem;
         font-weight: 500;
     }
-    /* Color-coded metric cards */
+    /* Color-coded metric cards — light mode */
     .metric-green [data-testid="stMetric"] {
         border-left: 4px solid #2e7d32;
         background: #e8f5e9;
@@ -61,6 +66,36 @@ st.markdown("""
         border-left: 4px solid #c62828;
         background: #ffebee;
     }
+    /* Dark mode overrides */
+    @media (prefers-color-scheme: dark) {
+        [data-testid="stMetric"] {
+            background: #1e1e1e !important;
+            border: 1px solid #333 !important;
+            color: #fafafa !important;
+        }
+        [data-testid="stMetricLabel"],
+        [data-testid="stMetricValue"] {
+            color: #fafafa !important;
+        }
+        [data-testid="stMetricDelta"] {
+            opacity: 0.9;
+        }
+        .metric-green [data-testid="stMetric"] {
+            background: #1a2e1a !important;
+            border-left: 4px solid #4caf50 !important;
+        }
+        .metric-yellow [data-testid="stMetric"] {
+            background: #2e2a1a !important;
+            border-left: 4px solid #ffca28 !important;
+        }
+        .metric-red [data-testid="stMetric"] {
+            background: #2e1a1a !important;
+            border-left: 4px solid #ef5350 !important;
+        }
+        .section-header {
+            border-bottom-color: #333 !important;
+        }
+    }
     /* Alert styling */
     .stAlert {
         margin-bottom: 0.5rem;
@@ -69,15 +104,32 @@ st.markdown("""
     .stPlotlyChart {
         margin-bottom: 0.5rem;
     }
+    /* Form inputs — force text color for iOS dark mode */
+    [data-testid="stNumberInput"] input,
+    [data-testid="stSelectbox"] select,
+    .stSlider [data-testid="stThumbValue"],
+    .stSlider [data-testid="stTickBarMin"],
+    .stSlider [data-testid="stTickBarMax"] {
+        color: var(--text-color) !important;
+    }
+    /* Number input and selectbox backgrounds */
+    [data-testid="stNumberInput"] input,
+    [data-testid="stSelectbox"] [data-baseweb="select"] {
+        background-color: var(--secondary-background-color) !important;
+    }
+    /* Dataframe text visibility */
+    [data-testid="stDataFrame"] {
+        color: var(--text-color);
+    }
     /* Term definitions */
     .term-def {
         font-size: 0.82rem;
-        color: #555;
+        color: var(--text-color);
         margin-bottom: 0.3rem;
     }
     .term-label {
         font-weight: 600;
-        color: #333;
+        color: var(--text-color);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -254,6 +306,7 @@ if not coe_df.empty:
         labels={"avg_premium": "Premium ($)", "month": "", "vehicle_class": "Category"},
     )
     fig.update_layout(
+        template="streamlit",
         height=380,
         hovermode="x unified",
         margin=dict(t=20, b=40, l=60, r=20),
@@ -339,6 +392,7 @@ if signal:
                        annotation_position="top left")
 
         fig2.update_layout(
+            template="streamlit",
             yaxis_title="Car Cost as % of Income",
             yaxis_tickformat=".0%",
             barmode="group",
@@ -364,6 +418,7 @@ if not town_df.empty:
             range_color=[25, 50],
         )
         fig3.update_layout(
+            template="streamlit",
             height=480,
             margin=dict(t=20, b=20, l=10, r=10),
             coloraxis_colorbar=dict(title="FSI", thickness=15),
@@ -408,6 +463,7 @@ if not hp_df.empty:
             line=dict(color="#e15759", width=2),
         ))
         fig4.update_layout(
+            template="streamlit",
             yaxis=dict(title="New HP Volume"),
             yaxis2=dict(title="Outstanding ($M)", overlaying="y", side="right"),
             height=380,
@@ -423,6 +479,7 @@ if not hp_df.empty:
         )
         fig5.update_traces(line_color="#f28e2b", line_width=2.5)
         fig5.update_layout(
+            template="streamlit",
             yaxis_title="HP Interest Rate (%)",
             height=380,
             margin=dict(t=20, b=40, l=60, r=20),
