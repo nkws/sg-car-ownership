@@ -1155,6 +1155,11 @@ else:
             st.caption(f"Tested {backtest['total_months']} months: "
                        f"{backtest['stress_count']} stress, {backtest['calm_count']} calm")
 
+# ─── COE Market Analysis ────────────────────────────────────────────────────
+
+from analysis.coe_market import render as render_coe_analysis
+render_coe_analysis()
+
 # ─── Footer ──────────────────────────────────────────────────────────────────
 
 st.markdown("")  # spacer
