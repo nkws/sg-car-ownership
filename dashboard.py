@@ -269,6 +269,74 @@ if not coe_df.empty:
 else:
     st.info("No COE data available. Run the pipeline first.")
 
+# ─── COE Tipping Point Detection ────────────────────────────────────────────
+
+st.markdown('<div class="section-header">COE Tipping Point Monitor</div>',
+            unsafe_allow_html=True)
+st.caption("Detects whether COE premiums are entering a confirmed reversal using 5 independent signals.")
+
+from models.coe_reversal import detect_all
+
+reversal_results = detect_all()
+
+if any(r["state"] != "NO DATA" for r in reversal_results.values()):
+    # State colour mapping
+    state_styles = {
+        "STABLE": ("green", "No reversal signals detected"),
+        "WATCH": ("yellow", "Early warning — monitor closely"),
+        "POSSIBLE": ("yellow", "Multiple signals suggest a possible reversal"),
+        "LIKELY": ("red", "Reversal likely — most signals triggered"),
+        "CONFIRMED": ("red", "Reversal confirmed — 4+ signals triggered"),
+    }
+
+    tp1, tp2 = st.columns(2)
+    for col_ui, (cat, result) in zip([tp1, tp2], reversal_results.items()):
+        with col_ui:
+            state = result["state"]
+            color, state_desc = state_styles.get(state, ("green", ""))
+            label = "Cat A" if "A" in cat else "Cat B"
+
+            st.markdown(f'<div class="metric-{color}">', unsafe_allow_html=True)
+            st.metric(
+                f"{label} — {state}",
+                f"{result['score']} / 5 signals",
+                delta=state_desc,
+            )
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            if result["premium_current"] is not None:
+                st.caption(
+                    f"Current: **${result['premium_current']:,.0f}** · "
+                    f"3mo avg: ${result['premium_3mo_avg']:,.0f} · "
+                    f"6mo avg: ${result['premium_6mo_avg']:,.0f}"
+                )
+
+    # Signal detail table
+    with st.expander("Signal Details", expanded=False):
+        for cat, result in reversal_results.items():
+            label = "Category A (up to 1600cc)" if "A" in cat else "Category B (above 1600cc)"
+            st.markdown(f"**{label}**")
+
+            signal_rows = []
+            for s in result["signals"]:
+                signal_rows.append({
+                    "Signal": s["name"],
+                    "Status": "TRIGGERED" if s["triggered"] else "—",
+                    "Detail": s["detail"],
+                    "What it means": s["description"],
+                })
+            st.dataframe(pd.DataFrame(signal_rows), use_container_width=True, hide_index=True)
+            st.markdown("")
+
+    st.caption(
+        "**How it works:** 5 signals are checked independently — consecutive lower premiums, "
+        "declining bid-to-quota ratio, moving average crossover, accelerating price decline, "
+        "and quota expansion. States: STABLE (0) → WATCH (1) → POSSIBLE (2) → LIKELY (3) → CONFIRMED (4+)."
+    )
+
+else:
+    st.info("No COE data available for tipping point analysis. Run the pipeline first.")
+
 # ─── Income vs Car Cost ──────────────────────────────────────────────────────
 
 st.markdown('<div class="section-header">Income vs Car Cost Segmentation</div>',
