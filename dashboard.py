@@ -89,22 +89,20 @@ st.markdown("""
 
 # ─── Load Data ───────────────────────────────────────────────────────────────
 
-@st.cache_data(ttl=300)
-def ensure_data():
-    """Auto-run pipeline if no data exists (e.g. fresh deployment)."""
-    if not SIGNAL_FILE.exists() or not DB_PATH.exists():
-        from run_pipeline import main as run_pipeline
-        run_pipeline()
+def run_pipeline_refresh():
+    """Run the full data pipeline and clear caches."""
+    from run_pipeline import main as run_pipeline
+    run_pipeline()
+    st.cache_data.clear()
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=3600)
 def load_signal():
-    ensure_data()
     if SIGNAL_FILE.exists():
         with open(SIGNAL_FILE) as f:
             return json.load(f)
     return None
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=3600)
 def load_coe_history():
     init_db()
     with get_conn() as conn:
@@ -116,14 +114,14 @@ def load_coe_history():
         """).fetchall()
     return pd.DataFrame([dict(r) for r in rows])
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=3600)
 def load_town_profiles():
     init_db()
     with get_conn() as conn:
         rows = conn.execute("SELECT * FROM town_profile ORDER BY fsi_score DESC").fetchall()
     return pd.DataFrame([dict(r) for r in rows])
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=3600)
 def load_income_segments():
     init_db()
     with get_conn() as conn:
@@ -134,7 +132,7 @@ def load_income_segments():
         """).fetchall()
     return pd.DataFrame([dict(r) for r in rows])
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=3600)
 def load_hp_data():
     init_db()
     with get_conn() as conn:
@@ -149,8 +147,16 @@ def load_hp_data():
 signal = load_signal()
 car_costs = signal.get("car_costs", {}) if signal else {}
 
-st.markdown("## SG Car Ownership")
-st.markdown("**Financial Stress Dashboard**")
+col_title, col_refresh = st.columns([6, 1])
+with col_title:
+    st.markdown("## SG Car Ownership")
+    st.markdown("**Financial Stress Dashboard**")
+with col_refresh:
+    st.markdown("")  # vertical align
+    if st.button("Refresh Data", help="Run the data pipeline to fetch latest data from LTA, DOS, MAS, etc."):
+        with st.spinner("Running data pipeline..."):
+            run_pipeline_refresh()
+        st.rerun()
 
 if signal:
     ts = signal.get("timestamp", "N/A")[:10]
