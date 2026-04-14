@@ -1,28 +1,86 @@
 """Policy Radar — Tracking upcoming policy changes that affect COE prices.
 
-A structured framework for assessing the probability, direction,
-and magnitude of policy changes based on evidence signals.
+Signal strength is derived solely from observable evidence, not
+subjective probability estimates. Each evidence item carries a
+declared weight based on its type. The total determines the signal.
 
-Each policy entry tracks:
-- What's being discussed
-- Evidence trail (parliamentary mentions, consultations, media)
-- Probability (low/medium/high)
-- COE price direction (up/down)
-- Estimated premium impact range
-- Expected timeline
-- Current status
+Evidence Weight Methodology
+───────────────────────────
+The weight assigned to each evidence type reflects how strongly that
+type of signal predicts a policy change will actually happen, based
+on Singapore's policy-making norms:
+
+  Gazetted / Enacted law .............. 35 pts
+    The change is already in force. No ambiguity remains.
+
+  Budget announcement ................. 30 pts
+    Announced by Finance Minister during Budget. Near-certain
+    to proceed — Budget measures are rarely reversed.
+
+  Parliamentary statement ............. 30 pts
+    Minister's public commitment in Parliament. Strong signal
+    of intent, though implementation details may shift.
+
+  LTA/agency official release ......... 25 pts
+    Formal press release or policy paper from the implementing
+    agency. Signals active planning, not just intent.
+
+  Public consultation launched ........ 20 pts
+    Agency is gathering feedback. Change is being designed but
+    outcome and timeline remain open.
+
+  Statutory / scheduled review ........ 15 pts
+    A review is mandated by existing policy cycle (e.g. VGR
+    every 3 years). The review will happen; the outcome is open.
+
+  Market / industry signal ............ 10 pts
+    Observable market behaviour consistent with the policy
+    change (e.g. buyers front-loading, dealers adjusting).
+
+  Media coverage / analyst view ....... 5 pts
+    Reporting or speculation without official confirmation.
+    Weakest signal — may reflect noise rather than intent.
+
+Signal Strength Thresholds
+──────────────────────────
+  >= 60 pts  →  Confirmed    Policy is enacted or near-certain
+  >= 40 pts  →  Strong       Multiple high-weight signals converge
+  >= 20 pts  →  Emerging     Credible signals but outcome uncertain
+  <  20 pts  →  Speculative  Mainly media/analyst discussion
 """
 
 import streamlit as st
 import plotly.graph_objects as go
 
-# ─── Evidence Strength Scoring ───────────────────────────────────────────────
-# Each evidence type has a weight. Total evidence score determines probability.
-#   Parliamentary statement / Minister speech: 30
-#   LTA public consultation launched: 25
-#   Budget announcement: 30
-#   Industry feedback / media reports: 10
-#   Analyst speculation: 5
+# ─── Evidence Weight Definitions ─────────────────────────────────────────────
+
+EVIDENCE_WEIGHTS = {
+    "Gazetted": 35,
+    "Budget Announcement": 30,
+    "Parliamentary": 30,
+    "LTA/Agency Release": 25,
+    "Public Consultation": 20,
+    "Statutory Cycle": 15,
+    "Market Signal": 10,
+    "Media/Analyst": 5,
+}
+
+SIGNAL_THRESHOLDS = [
+    (60, "Confirmed", "#59a14f"),
+    (40, "Strong", "#4e79a7"),
+    (20, "Emerging", "#f28e2b"),
+    (0, "Speculative", "#e15759"),
+]
+
+
+def _signal_label(score):
+    for threshold, label, color in SIGNAL_THRESHOLDS:
+        if score >= threshold:
+            return label, color
+    return "Speculative", "#e15759"
+
+
+# ─── Policy Data ─────────────────────────────────────────────────────────────
 
 POLICIES = [
     {
@@ -43,20 +101,18 @@ POLICIES = [
             "Long-term impact depends on final design — could redistribute demand "
             "between categories rather than raise overall levels."
         ),
-        "probability": "High",
-        "probability_score": 85,
         "timeline": "Review concludes end-2026, implementation 2027-2028",
         "evidence": [
             {"type": "Parliamentary", "weight": 30,
              "detail": "Acting Transport Minister Jeffrey Siow announced review during "
                        "Budget 2026 debate (4 Mar 2026)"},
-            {"type": "LTA Consultation", "weight": 25,
+            {"type": "Public Consultation", "weight": 20,
              "detail": "LTA gathering views from motorists, dealers, manufacturers, "
                        "and academics. Public consultation expected mid-2026"},
             {"type": "Market Signal", "weight": 10,
              "detail": "Cat A-Cat B premium gap narrowed to ~\\$3.7K (Feb 2025), "
                        "validating the convergence concern driving the review"},
-            {"type": "Media Coverage", "weight": 10,
+            {"type": "Media/Analyst", "weight": 5,
              "detail": "Extensive coverage across Straits Times, CNA, Motorist.sg. "
                        "Industry expects changes by 2027-2028"},
         ],
@@ -79,16 +135,14 @@ POLICIES = [
             "Effect is delayed — bites hardest from 2028-2031 when current registrations "
             "approach their 5-7 year mark."
         ),
-        "probability": "Certain",
-        "probability_score": 100,
         "timeline": "In effect since 13 Feb 2026 (Budget 2026)",
         "evidence": [
             {"type": "Budget Announcement", "weight": 30,
              "detail": "Announced in Budget 2026 by Finance Minister"},
-            {"type": "Gazetted", "weight": 30,
+            {"type": "Gazetted", "weight": 35,
              "detail": "Effective for COEs obtained from Feb 2026 R2 onwards. "
                        "Existing vehicles grandfathered under old rates"},
-            {"type": "Industry Impact", "weight": 10,
+            {"type": "Market Signal", "weight": 10,
              "detail": "Used car market for pre-Feb 2026 vehicles heating up as "
                        "buyers seek higher PARF retention under old rules"},
         ],
@@ -111,17 +165,15 @@ POLICIES = [
             "total cost of EV ownership rises, potentially cooling one source of "
             "COE bidding pressure."
         ),
-        "probability": "Certain",
-        "probability_score": 100,
         "timeline": "EEAI ends 31 Dec 2026. VES continues through 2027 (rebates taper)",
         "evidence": [
-            {"type": "LTA/NEA Joint Release", "weight": 30,
-             "detail": "Sep 2025: EEAI extended to Dec 2026 with reduced cap. "
-                       "VES extended to Dec 2027 with EV-only rebates"},
-            {"type": "Budget Confirmation", "weight": 30,
+            {"type": "LTA/Agency Release", "weight": 25,
+             "detail": "Sep 2025: LTA/NEA joint release — EEAI extended to Dec 2026 "
+                       "with reduced cap. VES extended to Dec 2027 with EV-only rebates"},
+            {"type": "Budget Announcement", "weight": 30,
              "detail": "Budget 2026 confirmed no further EEAI extension. "
                        "2026 is the final year"},
-            {"type": "Market Behaviour", "weight": 10,
+            {"type": "Market Signal", "weight": 10,
              "detail": "Tesla, BYD dealers reporting accelerated H2 2026 orders "
                        "as buyers front-load before EEAI cliff"},
         ],
@@ -144,17 +196,15 @@ POLICIES = [
             "If VGR goes slightly positive (e.g. 0.25%): meaningful bearish pressure "
             "as net new supply enters the system for the first time since 2018."
         ),
-        "probability": "Medium",
-        "probability_score": 50,
         "timeline": "Review in late 2027, effective Feb 2028",
         "evidence": [
-            {"type": "Statutory Cycle", "weight": 25,
+            {"type": "Statutory Cycle", "weight": 15,
              "detail": "VGR is reviewed every 3 years. Current period: "
                        "Feb 2025 - Jan 2028. Next review due late 2027"},
-            {"type": "Policy Signal", "weight": 10,
+            {"type": "Market Signal", "weight": 10,
              "detail": "0% VGR maintained since 2018. Government has signalled "
                        "desire to keep vehicle population stable. No hints of change"},
-            {"type": "ERP 2.0 Link", "weight": 10,
+            {"type": "Media/Analyst", "weight": 5,
              "detail": "LTA tied the 20,000 COE injection to ERP 2.0's ability "
                        "to manage congestion. If ERP 2.0 works, slight VGR increase "
                        "becomes more politically feasible"},
@@ -179,16 +229,14 @@ POLICIES = [
             "increase (more cars manageable with smarter pricing). The 20,000 COE "
             "injection was explicitly tied to ERP 2.0 readiness."
         ),
-        "probability": "Certain",
-        "probability_score": 100,
         "timeline": "Full rollout 1 Jan 2027. Gantry dismantling through 2026-2027",
         "evidence": [
-            {"type": "LTA Announcement", "weight": 30,
+            {"type": "LTA/Agency Release", "weight": 25,
              "detail": "OBU mandatory from 1 Jan 2027. 93% installed as of Jan 2026"},
-            {"type": "Legislation", "weight": 30,
+            {"type": "Gazetted", "weight": 35,
              "detail": "Road Traffic Act amendments passed Feb 2026 to facilitate "
                        "ERP 2.0 transition and enhanced penalties"},
-            {"type": "Operational", "weight": 10,
+            {"type": "Market Signal", "weight": 10,
              "detail": "Road signs and markings for gantry-free system trialled "
                        "Mar 2026. ERP rates increased at 4 locations from Mar 2026"},
         ],
@@ -212,16 +260,14 @@ POLICIES = [
             "deregistration wave produces a gradual dip rather than a cliff. "
             "The 20,000 injection adds ~3,300-5,000 COEs per year."
         ),
-        "probability": "Certain",
-        "probability_score": 100,
-        "timeline": "4-quarter averaging: active since Feb 2023. 20K injection: from Feb 2025 over several years",
+        "timeline": "4-quarter averaging: active since Feb 2023. 20K injection: from Feb 2025",
         "evidence": [
-            {"type": "LTA Policy", "weight": 30,
+            {"type": "LTA/Agency Release", "weight": 25,
              "detail": "4-quarter rolling average implemented Feb 2023"},
-            {"type": "LTA Announcement", "weight": 30,
+            {"type": "LTA/Agency Release", "weight": 25,
              "detail": "Oct 2024: LTA announced ~20,000 additional COEs from Feb 2025, "
                        "linked to ERP 2.0 and reduced-usage COE scheme"},
-            {"type": "Observed Effect", "weight": 10,
+            {"type": "Market Signal", "weight": 10,
              "detail": "Feb-Apr 2026 quota at 18,824 — still elevated despite slight "
                        "reduction, showing smoothing in action"},
         ],
@@ -234,20 +280,43 @@ POLICIES = [
 def render():
     """Render the Policy Radar section."""
 
-    # Summary metrics
-    certain = sum(1 for p in POLICIES if p["probability_score"] == 100)
-    high = sum(1 for p in POLICIES if 70 <= p["probability_score"] < 100)
-    medium = sum(1 for p in POLICIES if 30 <= p["probability_score"] < 70)
-
-    pm1, pm2, pm3, pm4 = st.columns(4)
-    pm1.metric("Policies Tracked", str(len(POLICIES)))
-    pm2.metric("Certain / Implemented", str(certain))
-    pm3.metric("High Probability", str(high))
-    pm4.metric("Medium / Uncertain", str(medium))
+    # Methodology declaration
+    with st.expander("Signal Strength Methodology", expanded=False):
+        st.markdown(
+            "Signal strength is derived from **observable evidence only**, not subjective "
+            "probability estimates. Each evidence item carries a weight based on its type:"
+        )
+        st.markdown("")
+        meth_data = []
+        for etype, weight in sorted(EVIDENCE_WEIGHTS.items(), key=lambda x: -x[1]):
+            meth_data.append({"Evidence Type": etype, "Weight": f"{weight} pts"})
+        st.dataframe(meth_data, use_container_width=True, hide_index=True)
+        st.markdown("")
+        st.markdown("**Signal thresholds** (sum of evidence weights):")
+        for threshold, label, color in SIGNAL_THRESHOLDS:
+            st.markdown(f"- **{label}** (>= {threshold} pts)")
 
     st.markdown("")
 
-    # Net direction assessment
+    # Summary metrics
+    for p in POLICIES:
+        p["_score"] = sum(e["weight"] for e in p["evidence"])
+        p["_signal"], p["_signal_color"] = _signal_label(p["_score"])
+
+    confirmed = sum(1 for p in POLICIES if p["_signal"] == "Confirmed")
+    strong = sum(1 for p in POLICIES if p["_signal"] == "Strong")
+    emerging = sum(1 for p in POLICIES if p["_signal"] == "Emerging")
+    speculative = sum(1 for p in POLICIES if p["_signal"] == "Speculative")
+
+    pm1, pm2, pm3, pm4 = st.columns(4)
+    pm1.metric("Policies Tracked", str(len(POLICIES)))
+    pm2.metric("Confirmed", str(confirmed))
+    pm3.metric("Strong Signals", str(strong))
+    pm4.metric("Emerging / Speculative", str(emerging + speculative))
+
+    st.markdown("")
+
+    # Net direction
     up_forces = [p for p in POLICIES if p["direction"] == "up"]
     down_forces = [p for p in POLICIES if p["direction"] == "down"]
     uncertain_forces = [p for p in POLICIES if p["direction"] == "uncertain"]
@@ -263,31 +332,28 @@ def render():
 
     st.markdown("")
 
-    # Probability vs Impact scatter
+    # Evidence Strength vs Impact chart
     fig = go.Figure()
 
     for p in POLICIES:
         color = "#e15759" if p["direction"] == "up" else (
             "#59a14f" if p["direction"] == "down" else "#f28e2b"
         )
-        arrow = "^" if p["direction"] == "up" else (
-            "v" if p["direction"] == "down" else "?"
-        )
 
         fig.add_trace(go.Scatter(
-            x=[p["probability_score"]],
-            y=[sum(e["weight"] for e in p["evidence"])],
+            x=[p["_score"]],
+            y=[len(p["evidence"])],
             mode="markers+text",
-            marker=dict(size=18, color=color, opacity=0.7,
+            marker=dict(size=20, color=color, opacity=0.7,
                         line=dict(width=1, color="white")),
-            text=[p["name"].split("(")[0].strip()[:20]],
+            text=[p["name"].split("(")[0].strip()[:25]],
             textposition="top center",
             textfont=dict(size=10),
             name=p["name"],
             hovertemplate=(
                 f"<b>{p['name']}</b><br>"
-                f"Probability: {p['probability_score']}%<br>"
-                f"Evidence: {sum(e['weight'] for e in p['evidence'])} pts<br>"
+                f"Evidence: {p['_score']} pts ({p['_signal']})<br>"
+                f"Sources: {len(p['evidence'])}<br>"
                 f"Direction: {p['direction']}<br>"
                 f"Impact: {p['impact_range']}<br>"
                 "<extra></extra>"
@@ -295,14 +361,23 @@ def render():
             showlegend=False,
         ))
 
+    # Threshold lines
+    for threshold, label, color in SIGNAL_THRESHOLDS:
+        if threshold > 0:
+            fig.add_vline(x=threshold, line_dash="dot",
+                          line_color=color, opacity=0.5,
+                          annotation_text=label,
+                          annotation_position="top")
+
     fig.update_layout(
         template="streamlit", height=350,
-        xaxis=dict(title="Probability (%)", range=[0, 110]),
-        yaxis=dict(title="Evidence Strength (pts)"),
-        margin=dict(t=20, b=40, l=60, r=20),
+        xaxis=dict(title="Evidence Strength (pts)", range=[0, 85]),
+        yaxis=dict(title="Number of Evidence Sources", dtick=1),
+        margin=dict(t=30, b=40, l=60, r=20),
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("Bubble color: red = pushes COE up, green = pushes COE down, orange = uncertain")
+    st.caption("Bubble color: red = pushes COE up, green = pushes COE down, orange = uncertain. "
+               "Vertical lines show signal thresholds.")
 
     st.markdown("")
 
@@ -315,7 +390,7 @@ def render():
             "#59a14f" if p["direction"] == "down" else "#f28e2b"
         )
 
-        st.markdown(f"---")
+        st.markdown("---")
 
         # Header row
         hc1, hc2, hc3 = st.columns([4, 1, 1])
@@ -339,21 +414,23 @@ def render():
 
         # Metrics row
         mc1, mc2, mc3 = st.columns(3)
-        mc1.metric("Probability", p["probability"],
-                   delta=f"{p['probability_score']}% confidence")
+        mc1.metric("Signal Strength",
+                   f"{p['_score']} pts — {p['_signal']}",
+                   delta=f"{len(p['evidence'])} evidence sources")
         mc2.metric("COE Direction", p["direction"].title(),
                    delta=p["impact_range"])
-        mc3.metric("Timeline", p["timeline"].split(".")[0][:30])
+        mc3.metric("Timeline", p["timeline"].split(".")[0][:35])
 
-        # Evidence trail
-        with st.expander("Evidence Trail", expanded=False):
-            for e in p["evidence"]:
-                ec1, ec2 = st.columns([1, 5])
-                with ec1:
-                    st.markdown(f"**{e['type']}**")
-                    st.caption(f"Weight: {e['weight']}")
-                with ec2:
-                    st.markdown(e["detail"])
+        # Evidence trail — always visible, shows how score is built
+        st.markdown("**Evidence Trail**")
+        for e in p["evidence"]:
+            ec1, ec2, ec3 = st.columns([1.5, 0.5, 5])
+            with ec1:
+                st.markdown(f"**{e['type']}**")
+            with ec2:
+                st.markdown(f"`+{e['weight']}pts`")
+            with ec3:
+                st.caption(e["detail"])
 
         # Impact analysis
         st.caption(f"**Impact:** {p['impact_note']}")
