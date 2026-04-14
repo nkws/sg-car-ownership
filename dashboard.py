@@ -523,9 +523,11 @@ st.markdown("")  # spacer
 
 st1, st2 = st.columns(2)
 coe_mult = st1.slider("COE Premium Multiplier", 0.5, 2.0, 1.0, 0.1,
-                       help="1.0 = current level, 1.5 = 50% increase")
+                       help="1.0 = current level, 1.5 = 50% increase",
+                       key="calc_coe_mult")
 rate_add = st2.slider("Flat Rate Increase (pp)", 0.0, 3.0, 0.0, 0.25,
-                       help="Additional percentage points on the advertised flat rate (not EIR)")
+                       help="Additional percentage points on the advertised flat rate (not EIR)",
+                       key="calc_rate_add")
 
 st.caption("Note: SG car loans use **flat rates**, not EIR. "
            "A 2.78% flat rate ≈ 5.2% EIR over 7 years. "
@@ -558,40 +560,70 @@ st.markdown("")  # spacer
 
 from models.ratio_model import flat_to_eir
 
+# Default values for calculator
+CALC_DEFAULTS = {
+    "calc_vehicle_price": 80000, "calc_coe_premium": 100000, "calc_arf_pct": 100,
+    "calc_downpayment_pct": 40, "calc_loan_tenure": 2, "calc_flat_rate": 2.78,
+    "calc_insurance": 1800, "calc_road_tax": 742, "calc_petrol": 300,
+    "calc_parking": 110, "calc_maintenance": 150, "calc_income": 8000,
+    "calc_coe_mult": 1.0, "calc_rate_add": 0.0,
+}
+
+def reset_calculator():
+    for key, val in CALC_DEFAULTS.items():
+        st.session_state[key] = val
+
+col_calc_title, col_calc_reset = st.columns([6, 1])
+with col_calc_title:
+    pass
+with col_calc_reset:
+    st.button("Reset to Defaults", on_click=reset_calculator, key="reset_calc_btn")
+
 calc1, calc2, calc3 = st.columns(3)
 
 with calc1:
     vehicle_price = st.number_input("Vehicle Price (OMV + dealer)", min_value=30000, max_value=500000,
                                      value=80000, step=5000, format="%d",
-                                     help="Open Market Value + dealer markup, before COE")
+                                     help="Open Market Value + dealer markup, before COE",
+                                     key="calc_vehicle_price")
     coe_premium = st.number_input("COE Premium", min_value=0, max_value=300000,
-                                   value=100000, step=5000, format="%d")
+                                   value=100000, step=5000, format="%d",
+                                   key="calc_coe_premium")
     arf_pct = st.slider("ARF (% of OMV)", 100, 220, 100, 10,
-                         help="Additional Registration Fee. 100% for first $20k OMV, tiered above that. Use 100% as default estimate.")
+                         help="Additional Registration Fee. 100% for first $20k OMV, tiered above that. Use 100% as default estimate.",
+                         key="calc_arf_pct")
 
 with calc2:
     downpayment_pct = st.slider("Downpayment (%)", 30, 100, 40, 5,
-                                 help="Minimum 30% for cars in SG (MAS regulation since 2016)")
+                                 help="Minimum 30% for cars in SG (MAS regulation since 2016)",
+                                 key="calc_downpayment_pct")
     loan_tenure = st.selectbox("Loan Tenure", [5, 6, 7], index=2,
                                 help="Maximum 7 years in SG",
-                                format_func=lambda x: f"{x} years")
+                                format_func=lambda x: f"{x} years",
+                                key="calc_loan_tenure")
     flat_rate = st.number_input("Flat Rate (% p.a.)", min_value=0.0, max_value=10.0,
                                  value=2.78, step=0.1, format="%.2f",
-                                 help="Advertised flat rate from dealer/bank. NOT the effective interest rate (EIR).")
+                                 help="Advertised flat rate from dealer/bank. NOT the effective interest rate (EIR).",
+                                 key="calc_flat_rate")
 
 with calc3:
     insurance = st.number_input("Insurance ($/yr)", min_value=0, max_value=10000,
-                                 value=1800, step=100, format="%d")
+                                 value=1800, step=100, format="%d",
+                                 key="calc_insurance")
     road_tax = st.number_input("Road Tax ($/yr)", min_value=0, max_value=5000,
-                                value=742, step=50, format="%d")
+                                value=742, step=50, format="%d",
+                                key="calc_road_tax")
     petrol = st.number_input("Petrol ($/mo)", min_value=0, max_value=1500,
-                              value=300, step=25, format="%d")
+                              value=300, step=25, format="%d",
+                              key="calc_petrol")
     parking = st.number_input("Parking ($/mo)", min_value=0, max_value=1000,
                                value=110, step=10, format="%d",
-                               help="HDB season parking ~$110, condo ~$0 (included), CBD ~$300+")
+                               help="HDB season parking ~$110, condo ~$0 (included), CBD ~$300+",
+                               key="calc_parking")
     maintenance = st.number_input("Maintenance ($/mo)", min_value=0, max_value=1000,
                                    value=150, step=25, format="%d",
-                                   help="Servicing, tyres, repairs averaged monthly")
+                                   help="Servicing, tyres, repairs averaged monthly",
+                                   key="calc_maintenance")
 
 st.markdown("")  # spacer
 
@@ -657,7 +689,8 @@ st.markdown('<div class="section-header">Affordability Check</div>', unsafe_allo
 st.caption("Enter your household income to see where you fall on the stress scale.")
 
 income_input = st.number_input("Gross Monthly Household Income ($)", min_value=1000,
-                                max_value=100000, value=8000, step=500, format="%d")
+                                max_value=100000, value=8000, step=500, format="%d",
+                                key="calc_income")
 
 income_ratio = monthly_total / income_input
 if income_ratio < 0.15:

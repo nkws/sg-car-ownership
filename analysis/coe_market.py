@@ -413,6 +413,7 @@ def render():
         "10-Year Cycle",
         "Market Forces",
         "Buying Window",
+        "Policy Radar",
     ])
 
     with tabs[0]:
@@ -425,3 +426,6 @@ def render():
         _render_forces()
     with tabs[4]:
         _render_buying_window()
+    with tabs[5]:
+        from analysis.policy_radar import render as render_radar
+        render_radar()
