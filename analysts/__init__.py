@@ -9,7 +9,13 @@ To add a new analyst:
 from models.analyst import Analyst
 
 from .bremmer_mock import BREMMER
+from .burry_mock import BURRY
+from .eisman_mock import EISMAN
+from .galloway_mock import GALLOWAY
 
 ANALYSTS: dict[str, Analyst] = {
     BREMMER["id"]: BREMMER,
+    GALLOWAY["id"]: GALLOWAY,
+    BURRY["id"]: BURRY,
+    EISMAN["id"]: EISMAN,
 }
