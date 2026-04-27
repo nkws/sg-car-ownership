@@ -142,6 +142,154 @@ def load_hp_data():
         except Exception:
             return pd.DataFrame()
 
+# ─── Sidebar Profile ─────────────────────────────────────────────────────────
+# Drives Calculator, Stress Test, Affordability Cliff, Town-Level Stress,
+# and the Verdict panel. Stored in st.session_state.profile.
+
+from models.profile import (
+    DWELLING_TYPES,
+    INCOME_PERCENTILES,
+    INCOME_PERCENTILES_REFERENCE,
+    DEFAULT_THRESHOLD_WAIT,
+    DEFAULT_THRESHOLD_PROCEED,
+    Profile,
+    default_profile,
+)
+
+# Seed session state once on first load.
+_PROFILE_KEYS = {
+    "profile_income": INCOME_PERCENTILES[50],
+    "profile_dwelling": "HDB 4 Room",
+    "profile_town": "",
+    "profile_vehicle_cat": "cat_a",
+    "profile_vehicle_price": 80_000,
+    "profile_tenure": 7,
+    "profile_stress_coe_mult": 1.0,
+    "profile_stress_rate_add": 0.0,
+    "profile_threshold_wait": DEFAULT_THRESHOLD_WAIT,
+    "profile_threshold_proceed": DEFAULT_THRESHOLD_PROCEED,
+}
+for _k, _v in _PROFILE_KEYS.items():
+    if _k not in st.session_state:
+        st.session_state[_k] = _v
+
+
+def _set_income(val: int) -> None:
+    st.session_state["profile_income"] = val
+
+
+with st.sidebar:
+    st.markdown("### Your Profile")
+    st.caption("Drives the Verdict panel and the affordability sections below.")
+
+    st.markdown("**Monthly household income**")
+    _btn_cols = st.columns(4)
+    for _i, (_pct, _val) in enumerate(INCOME_PERCENTILES.items()):
+        _btn_cols[_i].button(
+            f"P{_pct}",
+            key=f"income_preset_p{_pct}",
+            help=f"${_val:,}",
+            on_click=_set_income,
+            args=(_val,),
+            use_container_width=True,
+        )
+    st.number_input(
+        "$/month",
+        min_value=1_000, max_value=200_000, step=500, format="%d",
+        key="profile_income",
+        label_visibility="collapsed",
+    )
+    st.caption(f"Presets: {INCOME_PERCENTILES_REFERENCE}")
+
+    st.selectbox(
+        "Dwelling type",
+        options=DWELLING_TYPES,
+        key="profile_dwelling",
+    )
+
+    # Town selectbox is populated at render time from town_profile table.
+    _town_df_for_sidebar = load_town_profiles()
+    _town_options = [""] + (
+        sorted(_town_df_for_sidebar["town"].dropna().unique().tolist())
+        if not _town_df_for_sidebar.empty else []
+    )
+    if st.session_state["profile_town"] not in _town_options:
+        st.session_state["profile_town"] = ""
+    st.selectbox(
+        "Town (optional)",
+        options=_town_options,
+        format_func=lambda x: x if x else "— not set —",
+        key="profile_town",
+    )
+
+    st.divider()
+    st.markdown("### Vehicle Target")
+    st.selectbox(
+        "Category",
+        options=["cat_a", "cat_b"],
+        format_func=lambda x: "Cat A (≤1600cc)" if x == "cat_a" else "Cat B (>1600cc)",
+        key="profile_vehicle_cat",
+    )
+    st.slider(
+        "Vehicle price (OMV + dealer)",
+        min_value=30_000, max_value=300_000, step=5_000, format="$%d",
+        key="profile_vehicle_price",
+    )
+    st.selectbox(
+        "Loan tenure",
+        options=[5, 6, 7],
+        format_func=lambda x: f"{x} years",
+        key="profile_tenure",
+    )
+
+    st.divider()
+    st.markdown("### Stress Scenario")
+    st.caption("Applied to the Verdict and Stress Test sections.")
+    st.slider(
+        "COE multiplier",
+        min_value=0.5, max_value=2.0, step=0.1,
+        key="profile_stress_coe_mult",
+        help="1.0 = current level; 1.5 = +50%",
+    )
+    st.slider(
+        "Flat rate increase (pp)",
+        min_value=0.0, max_value=3.0, step=0.25,
+        key="profile_stress_rate_add",
+        help="Additional percentage points on the flat rate (not EIR)",
+    )
+
+    with st.expander("Advanced thresholds"):
+        st.caption("Override the Verdict decision rule cutoffs.")
+        st.number_input(
+            "Wait at ratio ≥",
+            min_value=0.10, max_value=1.0, step=0.05, format="%.2f",
+            key="profile_threshold_wait",
+        )
+        st.number_input(
+            "Proceed at ratio ≤",
+            min_value=0.05, max_value=1.0, step=0.05, format="%.2f",
+            key="profile_threshold_proceed",
+        )
+
+
+def _current_profile() -> Profile:
+    """Build a typed Profile from the current session state."""
+    return Profile(
+        monthly_income=int(st.session_state["profile_income"]),
+        dwelling_type=st.session_state["profile_dwelling"],
+        town=st.session_state["profile_town"],
+        vehicle_category=st.session_state["profile_vehicle_cat"],
+        vehicle_price=int(st.session_state["profile_vehicle_price"]),
+        loan_tenure_years=int(st.session_state["profile_tenure"]),
+        stress_coe_mult=float(st.session_state["profile_stress_coe_mult"]),
+        stress_rate_add=float(st.session_state["profile_stress_rate_add"]),
+        threshold_wait=float(st.session_state["profile_threshold_wait"]),
+        threshold_proceed=float(st.session_state["profile_threshold_proceed"]),
+    )
+
+
+profile = _current_profile()
+
 # ─── Header ──────────────────────────────────────────────────────────────────
 
 signal = load_signal()
@@ -162,6 +310,76 @@ if signal:
     ts = signal.get("timestamp", "N/A")[:10]
     st.caption(f"Data as of {ts}")
 
+    st.markdown("")  # spacer
+
+    # ── Verdict Panel ────────────────────────────────────────────────────────
+
+    from models.coe_reversal import detect_reversal
+    from models.ratio_model import stress_test as _stress_test, calculate_monthly_car_cost
+    from models.verdict import compute_verdict
+
+    # Market state: take the worse of Cat A / Cat B reversal states.
+    _state_rank = {"NO DATA": -1, "STABLE": 0, "WATCH": 1, "POSSIBLE": 2, "LIKELY": 3, "CONFIRMED": 4}
+    _rev_a = detect_reversal("Category A")
+    _rev_b = detect_reversal("Category B")
+    _worst = _rev_a if _state_rank.get(_rev_a["state"], -1) >= _state_rank.get(_rev_b["state"], -1) else _rev_b
+    _market_state = _worst["state"]
+    _market_reason = _worst["summary"]
+
+    # Personal stress-tested monthly cost using the sidebar profile.
+    _stress_results = _stress_test(profile["stress_coe_mult"], profile["stress_rate_add"])
+    _profile_stress = next(
+        (r for r in _stress_results if r["category"] == profile["vehicle_category"]),
+        _stress_results[0],
+    )
+    _stressed_monthly = _profile_stress["stressed_monthly_cost"]
+    _stress_ratio = _stressed_monthly / max(profile["monthly_income"], 1)
+
+    # FSI direction vs previous reading (held in session_state).
+    _fsi = signal.get("fsi_score", 0)
+    _previous_fsi = st.session_state.get("_last_fsi_score")
+    verdict = compute_verdict(
+        market_state=_market_state,
+        market_reason=_market_reason,
+        stress_ratio=_stress_ratio,
+        fsi_score=_fsi,
+        previous_fsi=_previous_fsi,
+        threshold_wait=profile["threshold_wait"],
+        threshold_proceed=profile["threshold_proceed"],
+    )
+    st.session_state["_last_fsi_score"] = _fsi
+
+    _rec_color = {"Wait": "red", "Caution": "yellow", "Proceed with caution": "green"}[
+        verdict["recommendation"]
+    ]
+    st.markdown(
+        f"<div class='metric-{_rec_color}' style='padding:1rem 1.2rem;border-radius:8px;"
+        f"background:rgba(127,127,127,0.08);margin-bottom:0.5rem;'>"
+        f"<div style='font-size:1.15rem;font-weight:600;'>{verdict['headline']}</div>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
+    _v1, _v2, _v3 = st.columns(3)
+    _v1.metric(
+        f"Market: {verdict['market_state']}",
+        f"{_worst['score']}/5 signals",
+        delta=verdict["market_reason"].split("—")[-1].strip().rstrip(".") if "—" in verdict["market_reason"] else "No reversal signals",
+        delta_color="off",
+    )
+    _v2.metric(
+        "Your stress-tested ratio",
+        f"{verdict['stress_ratio']:.0%}",
+        delta=f"${_stressed_monthly:,.0f}/mo on ${profile['monthly_income']:,}/mo income",
+        delta_color="off",
+    )
+    _v3.metric(
+        "Composite FSI",
+        f"{verdict['fsi_score']:.0f} / 100  {verdict['fsi_arrow']}",
+        delta="vs previous load" if _previous_fsi is not None else "first read this session",
+        delta_color="off",
+    )
+    st.caption("Heuristic only — not financial advice. Adjust the decision thresholds in the sidebar.")
     st.markdown("")  # spacer
 
     # ── FSI Score Cards ──────────────────────────────────────────────────────
@@ -464,7 +682,17 @@ if not town_df.empty:
         display_df["Income"] = display_df["Income"].apply(lambda x: f"${x:,.0f}")
         display_df["Ratio"] = display_df["Ratio"].apply(lambda x: f"{x:.1%}")
         display_df["FSI"] = display_df["FSI"].apply(lambda x: f"{x:.0f}")
-        st.dataframe(display_df, use_container_width=True, hide_index=True, height=480)
+
+        if profile["town"] and profile["town"] in display_df["Town"].values:
+            def _highlight_user_town(row):
+                if row["Town"] == profile["town"]:
+                    return ["background-color: rgba(255, 213, 79, 0.25); font-weight: 600"] * len(row)
+                return [""] * len(row)
+            styled_df = display_df.style.apply(_highlight_user_town, axis=1)
+            st.dataframe(styled_df, use_container_width=True, hide_index=True, height=480)
+            st.caption(f"Highlighted row: **{profile['town']}** (your selected town).")
+        else:
+            st.dataframe(display_df, use_container_width=True, hide_index=True, height=480)
 
 else:
     st.info("No town data available. Run the pipeline first.")
@@ -517,38 +745,58 @@ if not hp_df.empty:
 
 st.markdown('<div class="section-header">Stress Test Simulator</div>',
             unsafe_allow_html=True)
-st.caption("Model the impact of COE premium or interest rate changes on monthly car costs.")
+st.caption(
+    f"Stressed cost under your sidebar scenario "
+    f"(COE × {profile['stress_coe_mult']:.2f}, +{profile['stress_rate_add']:.2f}pp flat rate)."
+)
 
 st.markdown("")  # spacer
 
-st1, st2 = st.columns(2)
-coe_mult = st1.slider("COE Premium Multiplier", 0.5, 2.0, 1.0, 0.1,
-                       help="1.0 = current level, 1.5 = 50% increase",
-                       key="calc_coe_mult")
-rate_add = st2.slider("Flat Rate Increase (pp)", 0.0, 3.0, 0.0, 0.25,
-                       help="Additional percentage points on the advertised flat rate (not EIR)",
-                       key="calc_rate_add")
+from models.ratio_model import stress_test as _stress_test_fn
+_st_results = _stress_test_fn(profile["stress_coe_mult"], profile["stress_rate_add"])
+_user_st = next(
+    (r for r in _st_results if r["category"] == profile["vehicle_category"]),
+    _st_results[0],
+)
+_other_st = next(
+    (r for r in _st_results if r["category"] != profile["vehicle_category"]),
+    _st_results[-1],
+)
+_cat_labels = {"cat_a": "Cat A (≤1600cc)", "cat_b": "Cat B (>1600cc)"}
+_user_baseline = car_costs.get(profile["vehicle_category"], {}).get("monthly_total", 0)
+_user_delta = _user_st["stressed_monthly_cost"] - _user_baseline
+_user_st_ratio = _user_st["stressed_monthly_cost"] / max(profile["monthly_income"], 1)
 
-st.caption("Note: SG car loans use **flat rates**, not EIR. "
-           "A 2.78% flat rate ≈ 5.2% EIR over 7 years. "
-           "The slider adjusts the flat rate — the EIR equivalent is shown below.")
+sc1, sc2, sc3 = st.columns(3)
+with sc1:
+    st.markdown('<div class="metric-yellow">', unsafe_allow_html=True)
+    st.metric(
+        f"Your category: {_cat_labels[profile['vehicle_category']]}",
+        f"${_user_st['stressed_monthly_cost']:,.0f} / mo",
+        delta=(f"+${_user_delta:,.0f} vs baseline"
+               if _user_delta > 0
+               else f"-${abs(_user_delta):,.0f} vs baseline"),
+        delta_color="inverse",
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.caption(f"Flat: {_user_st['stressed_flat_rate']:.2%} → EIR: {_user_st['stressed_eir']:.2%}")
+sc2.metric(
+    "Stress ratio (cost / income)",
+    f"{_user_st_ratio:.0%}",
+    delta=f"on ${profile['monthly_income']:,}/mo income",
+    delta_color="off",
+)
+sc3.metric(
+    f"For reference: {_cat_labels[_other_st['category']]}",
+    f"${_other_st['stressed_monthly_cost']:,.0f} / mo",
+    delta=f"Flat {_other_st['stressed_flat_rate']:.2%}",
+    delta_color="off",
+)
 
-if coe_mult != 1.0 or rate_add != 0.0:
-    from models.ratio_model import stress_test
-    results = stress_test(coe_mult, rate_add)
-
-    sc1, sc2 = st.columns(2)
-    cat_labels = {"cat_a": "Cat A (up to 1600cc)", "cat_b": "Cat B (above 1600cc)"}
-    for col_ui, r in zip([sc1, sc2], results):
-        label = cat_labels.get(r["category"], r["category"])
-        baseline = car_costs.get(r["category"], {}).get("monthly_total", 0)
-        delta = r["stressed_monthly_cost"] - baseline
-        delta_str = f"+${delta:,.0f}/mo" if delta > 0 else f"-${abs(delta):,.0f}/mo"
-        col_ui.metric(label, f"${r['stressed_monthly_cost']:,.0f} / mo",
-                      delta=delta_str, delta_color="inverse")
-        col_ui.caption(f"Flat: {r['stressed_flat_rate']:.2%} → EIR: {r['stressed_eir']:.2%}")
-else:
-    st.info("Adjust the sliders above to run a stress scenario.")
+st.caption(
+    "Adjust the COE multiplier and flat-rate add-on in the sidebar's **Stress Scenario** section. "
+    "SG car loans use flat rates, not EIR — a 2.78% flat ≈ 5.2% EIR over 7 years."
+)
 
 # ─── Car Cost Calculator ─────────────────────────────────────────────────────
 
@@ -560,17 +808,35 @@ st.markdown("")  # spacer
 
 from models.ratio_model import flat_to_eir
 
-# Default values for calculator
-CALC_DEFAULTS = {
-    "calc_vehicle_price": 80000, "calc_coe_premium": 100000, "calc_arf_pct": 100,
-    "calc_downpayment_pct": 40, "calc_loan_tenure": 2, "calc_flat_rate": 2.78,
-    "calc_insurance": 1800, "calc_road_tax": 742, "calc_petrol": 300,
-    "calc_parking": 110, "calc_maintenance": 150, "calc_income": 8000,
-    "calc_coe_mult": 1.0, "calc_rate_add": 0.0,
-}
+# Calculator defaults — pulled from the sidebar profile so vehicle price,
+# tenure, and income follow the user's profile. Values not represented in
+# the profile (COE premium target, ARF %, fixed running costs) keep their
+# documented SG defaults.
+def _calc_defaults() -> dict:
+    return {
+        "calc_vehicle_price": profile["vehicle_price"],
+        "calc_coe_premium": 100000,
+        "calc_arf_pct": 100,
+        "calc_downpayment_pct": 40,
+        "calc_loan_tenure": profile["loan_tenure_years"],
+        "calc_flat_rate": 2.78,
+        "calc_insurance": 1800,
+        "calc_road_tax": 742,
+        "calc_petrol": 300,
+        "calc_parking": 110,
+        "calc_maintenance": 150,
+        "calc_income": profile["monthly_income"],
+    }
+
+# Seed once on first load so the calculator opens already populated from the
+# profile. Subsequent profile changes don't auto-overwrite — user clicks
+# "Reset to Defaults" to re-pull.
+for _ck, _cv in _calc_defaults().items():
+    if _ck not in st.session_state:
+        st.session_state[_ck] = _cv
 
 def reset_calculator():
-    for key, val in CALC_DEFAULTS.items():
+    for key, val in _calc_defaults().items():
         st.session_state[key] = val
 
 col_calc_title, col_calc_reset = st.columns([6, 1])
@@ -849,12 +1115,18 @@ if signal and car_costs:
         colors = ["#4e79a7", "#59a14f", "#76b7b2", "#f28e2b", "#e15759", "#b07aa1"]
         for i, dwelling in enumerate(dwelling_incomes.index):
             dw_data = cliff_df[cliff_df["Dwelling Type"] == dwelling]
+            _is_user_dw = dwelling == profile["dwelling_type"]
             fig_cliff.add_trace(go.Scatter(
                 x=dw_data["COE Premium"], y=dw_data["Cost/Income Ratio"],
-                name=dwelling, mode="lines",
-                line=dict(color=colors[i % len(colors)], width=2),
+                name=f"{dwelling} (you)" if _is_user_dw else dwelling,
+                mode="lines",
+                line=dict(
+                    color="#ffd54f" if _is_user_dw else colors[i % len(colors)],
+                    width=4 if _is_user_dw else 1.5,
+                ),
+                opacity=1.0 if _is_user_dw else 0.55,
                 hovertemplate=(
-                    f"<b>{dwelling}</b><br>"
+                    f"<b>{dwelling}{' (you)' if _is_user_dw else ''}</b><br>"
                     "COE: $%{x:,.0f}<br>"
                     "Ratio: %{y:.0%}<br>"
                     "<extra></extra>"
