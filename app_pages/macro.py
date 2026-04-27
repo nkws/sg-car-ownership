@@ -13,7 +13,7 @@ from models.analyst import Analyst
 
 
 st.set_page_config(
-    page_title="Macro — SG Car Ownership",
+    page_title="Macro — Singapore Car Ownership: Affordability, COE & Household Stress Index",
     page_icon="🌐",
     layout="wide",
 )

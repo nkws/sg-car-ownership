@@ -13,7 +13,7 @@ from database import get_conn, init_db
 from config import SIGNAL_FILE, DB_PATH, SEGMENT_THRESHOLDS
 
 st.set_page_config(
-    page_title="SG Car Ownership — Financial Stress Dashboard",
+    page_title="Singapore Car Ownership: Affordability, COE & Household Stress Index",
     page_icon="🚗",
     layout="wide",
 )
@@ -297,8 +297,8 @@ car_costs = signal.get("car_costs", {}) if signal else {}
 
 col_title, col_refresh = st.columns([6, 1])
 with col_title:
-    st.markdown("## SG Car Ownership")
-    st.markdown("**Financial Stress Dashboard**")
+    st.markdown("## Singapore Car Ownership")
+    st.markdown("**Affordability, COE & Household Stress Index**")
 with col_refresh:
     st.markdown("")  # vertical align
     if st.button("Refresh Data", help="Run the data pipeline to fetch latest data from LTA, DOS, MAS, etc."):
@@ -1543,5 +1543,6 @@ render_coe_analysis()
 
 st.markdown("")  # spacer
 st.divider()
-st.caption("SG Car Ownership Financial Profiling | Data: LTA, DOS, HDB, MAS, CPF, URA | "
+st.caption("Singapore Car Ownership: Affordability, COE & Household Stress Index | "
+           "Data: LTA, DOS, HDB, MAS, CPF, URA | "
            "Run `python3 run_pipeline.py` to refresh data")
