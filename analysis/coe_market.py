@@ -6,11 +6,20 @@ feast-famine rhythm that governs Singapore's COE market.
 Published: March 2026
 """
 
+from datetime import datetime
+
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
 
+from database import get_conn
+
 # ─── Data ────────────────────────────────────────────────────────────────────
+
+# Hardcoded snapshot used as a fallback when the SQLite cache is empty (e.g.
+# fresh checkout, pipeline never run). Live data takes precedence — see
+# `_load_recent_premiums` below — so this list does NOT need to be edited each
+# bidding round.
 
 CAT_AB_DATA = [
     {"period": "Mar 25 R1", "catA": 94502, "catB": 116890},
@@ -148,6 +157,97 @@ WHY_DIFFERENT = [
 ]
 
 
+# ─── Live data loaders ───────────────────────────────────────────────────────
+
+# LTA's CSV uses "Mar-2026" but other formats (e.g. "2026-03") have been seen
+# in the wild — try a few before giving up and using the raw value.
+_MONTH_FORMATS = ("%b-%Y", "%Y-%m", "%B-%Y", "%Y-%m-%d")
+
+
+def _format_period(month: str, bidding_no) -> str:
+    """Render '2026-03' + '2' as 'Mar 26 R2'."""
+    if month is None:
+        return f"R{bidding_no}"
+    for fmt in _MONTH_FORMATS:
+        try:
+            dt = datetime.strptime(str(month).strip(), fmt)
+            return f"{dt.strftime('%b %y')} R{bidding_no}"
+        except ValueError:
+            continue
+    return f"{month} R{bidding_no}"
+
+
+def _parse_month(month) -> datetime:
+    """Best-effort parse of an LTA month string. Returns datetime.min on failure."""
+    if month is None:
+        return datetime.min
+    for fmt in _MONTH_FORMATS:
+        try:
+            return datetime.strptime(str(month).strip(), fmt)
+        except ValueError:
+            continue
+    return datetime.min
+
+
+@st.cache_data(ttl=3600)
+def _load_recent_premiums(rounds: int = 14) -> list[dict]:
+    """Pull the last `rounds` bidding exercises with both Cat A and Cat B set.
+
+    Falls back to the hardcoded CAT_AB_DATA snapshot if the table is missing
+    or empty — keeps the dashboard usable on a fresh checkout.
+
+    Sorting happens in Python because LTA uses a non-ISO month format
+    ("Mar-2026") that doesn't sort lexicographically.
+    """
+    try:
+        with get_conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT month, bidding_no,
+                       MAX(CASE WHEN vehicle_class LIKE '%Category A%'
+                                THEN premium END) AS catA,
+                       MAX(CASE WHEN vehicle_class LIKE '%Category B%'
+                                THEN premium END) AS catB
+                FROM coe_results
+                WHERE vehicle_class LIKE '%Category A%'
+                   OR vehicle_class LIKE '%Category B%'
+                GROUP BY month, bidding_no
+                HAVING catA IS NOT NULL AND catB IS NOT NULL
+                """
+            ).fetchall()
+    except Exception:
+        rows = []
+
+    if not rows:
+        return list(CAT_AB_DATA)
+
+    rows = sorted(rows, key=lambda r: (_parse_month(r["month"]), str(r["bidding_no"])))
+    rows = rows[-rounds:]
+
+    return [
+        {
+            "period": _format_period(r["month"], r["bidding_no"]),
+            "catA": r["catA"],
+            "catB": r["catB"],
+        }
+        for r in rows
+    ]
+
+
+@st.cache_data(ttl=3600)
+def _load_coe_freshness() -> str | None:
+    """ISO timestamp of the last successful coe_results refresh, or None."""
+    try:
+        with get_conn() as conn:
+            row = conn.execute(
+                "SELECT last_updated FROM data_refresh_log WHERE source = ?",
+                ("coe_results",),
+            ).fetchone()
+        return row["last_updated"] if row else None
+    except Exception:
+        return None
+
+
 # ─── Render Functions ────────────────────────────────────────────────────────
 
 def _render_overview():
@@ -168,8 +268,37 @@ def _render_overview():
 
     st.markdown("")
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Cat A (Mar 26 R2)", "$111,890", delta="+$3,670 from R1", delta_color="inverse")
-    m2.metric("Cat B (Mar 26 R2)", "$115,568", delta="+$1,566 from R1", delta_color="inverse")
+
+    data = _load_recent_premiums()
+    latest = data[-1] if data else None
+    prior = data[-2] if len(data) >= 2 else None
+
+    def _delta(curr, prev):
+        if curr is None or prev is None:
+            return None
+        diff = curr - prev
+        sign = "+" if diff >= 0 else "−"
+        return f"{sign}${abs(diff):,.0f} from prev round"
+
+    if latest:
+        m1.metric(
+            f"Cat A ({latest['period']})",
+            f"${latest['catA']:,.0f}",
+            delta=_delta(latest["catA"], prior["catA"] if prior else None),
+            delta_color="inverse",
+        )
+        m2.metric(
+            f"Cat B ({latest['period']})",
+            f"${latest['catB']:,.0f}",
+            delta=_delta(latest["catB"], prior["catB"] if prior else None),
+            delta_color="inverse",
+        )
+    else:
+        m1.metric("Cat A", "—")
+        m2.metric("Cat B", "—")
+
+    # Quota and PQP come from separate sources not yet wired to SQLite —
+    # leave hardcoded for now.
     m3.metric("Feb-Apr 26 Quota", "18,824", delta="-160 from prev qtr")
     m4.metric("PQP Cat A (Apr 26)", "$107,407", delta="-$6,597 from Jan")
 
@@ -188,7 +317,7 @@ def _render_trajectory():
         "unusually tight by historical standards."
     )
 
-    df = pd.DataFrame(CAT_AB_DATA)
+    df = pd.DataFrame(_load_recent_premiums())
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=df["period"], y=df["catA"], name="Cat A (<1600cc)",
@@ -402,8 +531,27 @@ def render():
     """Render the COE Market Analysis section."""
     st.markdown('<div class="section-header">COE Market Analysis</div>',
                 unsafe_allow_html=True)
-    st.caption("March 2026 | A structural analysis of supply dynamics, policy shifts, "
-               "and the feast-famine rhythm that governs Singapore's COE market.")
+    st.caption(
+        "A structural analysis of supply dynamics, policy shifts, and the "
+        "feast-famine rhythm that governs Singapore's COE market."
+    )
+
+    # Freshness badge — shows the latest bidding round in the cache and when
+    # the underlying coe_results table was last refreshed.
+    data = _load_recent_premiums()
+    latest_period = data[-1]["period"] if data else "—"
+    refreshed = _load_coe_freshness()
+    if refreshed:
+        try:
+            refreshed_label = datetime.fromisoformat(refreshed).strftime("%Y-%m-%d %H:%M")
+        except ValueError:
+            refreshed_label = refreshed[:16]
+    else:
+        refreshed_label = "never (run `python3 run_pipeline.py`)"
+    st.caption(
+        f"Latest bidding round: **{latest_period}** · "
+        f"Data refreshed: {refreshed_label}"
+    )
 
     st.markdown("")
 
