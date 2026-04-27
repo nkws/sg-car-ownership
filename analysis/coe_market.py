@@ -234,6 +234,127 @@ def _load_recent_premiums(rounds: int = 14) -> list[dict]:
     ]
 
 
+def _compute_market_stats(data: list[dict]) -> dict:
+    """Derive every fact the prose anchors against from the premium history.
+
+    Returns a dict with: latest, prior, peak_a/_b/_period (within window),
+    correction_pct_a/_b (peak -> latest), current_gap, min_gap/_period,
+    consecutive_rises_a/_b. All values are None when data is too short.
+    """
+    if not data:
+        return {}
+
+    latest = data[-1]
+    prior = data[-2] if len(data) >= 2 else None
+
+    peak_a = max(data, key=lambda r: r["catA"])
+    peak_b = max(data, key=lambda r: r["catB"])
+
+    def _correction(peak_val, curr_val):
+        if peak_val <= 0:
+            return 0.0
+        return (peak_val - curr_val) / peak_val * 100
+
+    gaps = [(r["period"], r["catB"] - r["catA"]) for r in data]
+    min_gap_period, min_gap = min(gaps, key=lambda t: t[1])
+    current_gap = latest["catB"] - latest["catA"]
+
+    def _consecutive_rises(key: str) -> int:
+        n = 0
+        for i in range(len(data) - 1, 0, -1):
+            if data[i][key] > data[i - 1][key]:
+                n += 1
+            else:
+                break
+        return n
+
+    return {
+        "latest": latest,
+        "prior": prior,
+        "peak_a": peak_a["catA"],
+        "peak_b": peak_b["catB"],
+        "peak_a_period": peak_a["period"],
+        "peak_b_period": peak_b["period"],
+        "correction_pct_a": _correction(peak_a["catA"], latest["catA"]),
+        "correction_pct_b": _correction(peak_b["catB"], latest["catB"]),
+        "current_gap": current_gap,
+        "min_gap": min_gap,
+        "min_gap_period": min_gap_period,
+        "consecutive_rises_a": _consecutive_rises("catA"),
+        "consecutive_rises_b": _consecutive_rises("catB"),
+    }
+
+
+@st.cache_data(ttl=3600)
+def _load_latest_quota(months_back: int = 3) -> dict | None:
+    """Sum quota across the latest N distinct months for Cat A and Cat B.
+
+    Returns {"period": "Feb-Apr 26", "total": 18824, "delta": -160} or None.
+    Delta compares to the previous N-month window when available.
+    """
+    try:
+        with get_conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT month, vehicle_class, SUM(quota) AS q
+                FROM coe_results
+                WHERE vehicle_class LIKE '%Category A%'
+                   OR vehicle_class LIKE '%Category B%'
+                GROUP BY month, vehicle_class
+                """
+            ).fetchall()
+    except Exception:
+        return None
+
+    if not rows:
+        return None
+
+    # Aggregate to month -> total quota across A+B.
+    by_month: dict[str, float] = {}
+    for r in rows:
+        if r["q"] is not None:
+            by_month[r["month"]] = by_month.get(r["month"], 0) + r["q"]
+
+    months = sorted(by_month.keys(), key=_parse_month)
+    if len(months) < months_back:
+        return None
+
+    recent = months[-months_back:]
+    total = sum(by_month[m] for m in recent)
+
+    if len(months) >= 2 * months_back:
+        prev = months[-2 * months_back:-months_back]
+        prev_total = sum(by_month[m] for m in prev)
+        delta = int(total - prev_total)
+    else:
+        delta = None
+
+    def _short(m):
+        dt = _parse_month(m)
+        return dt.strftime("%b") if dt != datetime.min else m
+
+    period = f"{_short(recent[0])}-{_short(recent[-1])} {_parse_month(recent[-1]).strftime('%y')}"
+
+    return {"period": period, "total": int(total), "delta": delta}
+
+
+def _pqp_proxy_3mo(data: list[dict], category: str = "catA") -> dict | None:
+    """3-bidding-round trailing average — proxy for LTA's PQP (3-month MA)."""
+    if len(data) < 6:
+        return None
+    recent = data[-3:]
+    prior = data[-6:-3]
+    recent_avg = sum(d[category] for d in recent) / 3
+    prior_avg = sum(d[category] for d in prior) / 3
+    return {
+        "recent": recent_avg,
+        "prior": prior_avg,
+        "delta": recent_avg - prior_avg,
+        "recent_period": data[-1]["period"],
+        "prior_period": data[-4]["period"],
+    }
+
+
 @st.cache_data(ttl=3600)
 def _load_coe_freshness() -> str | None:
     """ISO timestamp of the last successful coe_results refresh, or None."""
@@ -248,6 +369,186 @@ def _load_coe_freshness() -> str | None:
         return None
 
 
+# ─── Thesis audit ────────────────────────────────────────────────────────────
+
+# When the analyst-written prose was authored. Surface this date so readers
+# know the structural narrative is a snapshot, not a live document.
+THESIS_DATE = datetime(2026, 3, 1)
+
+# Each anchor encodes one numeric/temporal claim from the prose. The audit
+# function checks each against current data and tags it OK / WATCH / STALE so
+# we know when to revisit the narrative.
+THESIS_ANCHORS: list[dict] = [
+    {
+        "claim": "Cat A 'currently in the ~$110K range'",
+        "tab": "Big Picture",
+        "kind": "price_band",
+        "anchor": 110000,
+        "tolerance_pct": 15,
+    },
+    {
+        "claim": "Forecasted Cat A trough: $85K–$95K by mid-2027",
+        "tab": "Big Picture / Forces",
+        "kind": "trough",
+        "low": 85000,
+        "high": 95000,
+        "trough_by": datetime(2027, 6, 30),
+    },
+    {
+        "claim": "Reference peak: Cat A $128K (Oct 2025 spike)",
+        "tab": "Trajectory",
+        "kind": "peak_reference",
+        "peak_value": 128000,
+        "peak_period_match": "Oct 25",
+    },
+    {
+        "claim": "Cat A–B gap is unusually narrow (~$3.7K)",
+        "tab": "Trajectory",
+        "kind": "gap_band",
+        "anchor": 3700,
+        "tolerance_pct": 50,
+    },
+    {
+        "claim": "Optimal buying window: Oct–Nov 2026",
+        "tab": "Buying Window",
+        "kind": "date_window",
+        "start": datetime(2026, 10, 1),
+        "end": datetime(2026, 11, 30),
+    },
+    {
+        "claim": "EEAI rebate sunsets Jan 2027",
+        "tab": "Buying Window",
+        "kind": "date_deadline",
+        "deadline": datetime(2027, 1, 1),
+    },
+    {
+        "claim": "Budget 2026 PARF cuts framed as 'recent'",
+        "tab": "Forces",
+        "kind": "policy_recency",
+        "policy_date": datetime(2026, 2, 1),
+        "stale_after_months": 12,
+    },
+]
+
+
+def _check_anchor(anchor: dict, stats: dict, today: datetime) -> tuple[str, str]:
+    """Return (status, explanation). Status ∈ {OK, WATCH, STALE, UNKNOWN}."""
+    kind = anchor["kind"]
+    latest = stats.get("latest")
+
+    if kind == "price_band":
+        if not latest:
+            return ("UNKNOWN", "no premium data available")
+        val = latest["catA"]
+        drift = abs(val - anchor["anchor"]) / anchor["anchor"] * 100
+        if drift <= anchor["tolerance_pct"]:
+            return ("OK",
+                    f"Latest Cat A ${val:,.0f} within {drift:.0f}% of "
+                    f"${anchor['anchor']:,.0f} anchor.")
+        if drift <= anchor["tolerance_pct"] * 2:
+            return ("WATCH",
+                    f"Cat A ${val:,.0f} has drifted {drift:.0f}% from the "
+                    f"${anchor['anchor']:,.0f} anchor — phrasing starting to age.")
+        return ("STALE",
+                f"Cat A ${val:,.0f} is {drift:.0f}% off the "
+                f"${anchor['anchor']:,.0f} anchor — 'current range' phrasing no "
+                f"longer fits.")
+
+    if kind == "trough":
+        if not latest:
+            return ("UNKNOWN", "no premium data available")
+        val = latest["catA"]
+        if val < anchor["low"]:
+            return ("STALE",
+                    f"Cat A already at ${val:,.0f}, below the forecast trough "
+                    f"floor of ${anchor['low']:,.0f}. Forecast may have been "
+                    f"overshot.")
+        if val > anchor["high"] * 1.4:
+            return ("WATCH",
+                    f"Cat A ${val:,.0f} is well above the forecast trough range. "
+                    f"Either the trough hasn't started or the forecast was too low.")
+        if today > anchor["trough_by"]:
+            return ("STALE",
+                    f"Forecast trough date ({anchor['trough_by']:%b %Y}) has "
+                    f"passed; Cat A still at ${val:,.0f}.")
+        return ("OK",
+                f"Cat A ${val:,.0f} consistent with a not-yet-arrived trough at "
+                f"${anchor['low']:,.0f}–${anchor['high']:,.0f}.")
+
+    if kind == "peak_reference":
+        peak_now = stats.get("peak_a") or 0
+        peak_period = stats.get("peak_a_period", "—")
+        # Anchor stays valid as long as the current peak still falls within
+        # the referenced period (small numeric drift from rounding is fine).
+        period_match = anchor.get("peak_period_match", "")
+        if period_match and period_match in peak_period:
+            return ("OK",
+                    f"${peak_now:,.0f} ({peak_period}) remains the window peak.")
+        if peak_now > anchor["peak_value"] * 1.02:
+            return ("STALE",
+                    f"A newer round (${peak_now:,.0f} on {peak_period}) has "
+                    f"exceeded the ${anchor['peak_value']:,.0f} reference peak. "
+                    f"The 'Oct 2025 spike' anchor is no longer the high water mark.")
+        return ("OK",
+                f"${anchor['peak_value']:,.0f} remains the window peak.")
+
+    if kind == "gap_band":
+        gap = stats.get("current_gap")
+        if gap is None:
+            return ("UNKNOWN", "no premium data available")
+        drift = abs(gap - anchor["anchor"]) / anchor["anchor"] * 100
+        if drift <= anchor["tolerance_pct"]:
+            return ("OK",
+                    f"Current gap ${gap:,.0f} within {drift:.0f}% of "
+                    f"${anchor['anchor']:,.0f} anchor.")
+        if drift <= anchor["tolerance_pct"] * 2:
+            return ("WATCH",
+                    f"Current gap ${gap:,.0f} drifted {drift:.0f}% from anchor.")
+        return ("STALE",
+                f"Current gap ${gap:,.0f} no longer matches the "
+                f"${anchor['anchor']:,.0f} anchor.")
+
+    if kind == "date_window":
+        if today < anchor["start"]:
+            days = (anchor["start"] - today).days
+            return ("OK",
+                    f"Window opens in {days} days "
+                    f"({anchor['start']:%b %Y}).")
+        if anchor["start"] <= today <= anchor["end"]:
+            return ("WATCH",
+                    f"Currently inside the buying window "
+                    f"({anchor['start']:%b}–{anchor['end']:%b %Y}). "
+                    f"Verify the trough thesis still holds.")
+        days_past = (today - anchor["end"]).days
+        return ("STALE",
+                f"Window closed {days_past} days ago — was the trough hit? "
+                f"Strategy section needs a post-mortem.")
+
+    if kind == "date_deadline":
+        if today < anchor["deadline"]:
+            days = (anchor["deadline"] - today).days
+            return ("OK",
+                    f"{days} days until {anchor['deadline']:%b %Y} deadline.")
+        return ("STALE",
+                f"Deadline ({anchor['deadline']:%b %Y}) has passed.")
+
+    if kind == "policy_recency":
+        months_old = ((today.year - anchor["policy_date"].year) * 12
+                      + (today.month - anchor["policy_date"].month))
+        if months_old <= anchor["stale_after_months"]:
+            return ("OK",
+                    f"{months_old} months since policy enacted — still recent.")
+        return ("WATCH",
+                f"{months_old} months since policy — 'recent' framing aging.")
+
+    return ("UNKNOWN", "unknown anchor kind")
+
+
+def _audit_thesis(stats: dict, today: datetime | None = None) -> list[tuple[dict, str, str]]:
+    today = today or datetime.now()
+    return [(a, *_check_anchor(a, stats, today)) for a in THESIS_ANCHORS]
+
+
 # ─── Render Functions ────────────────────────────────────────────────────────
 
 def _render_overview():
@@ -260,18 +561,31 @@ def _render_overview():
         "**moderated, drawn-out dip** rather than a sharp correction."
     )
     st.markdown("")
-    st.markdown(
-        "**Most probable outcome:** Cat A premiums ease from the current ~\\$110K range toward "
-        "\\$85K-\\$95K by late 2026 to mid-2027, then stabilise or rebound. "
-        "The window is real but narrower than the market expects."
-    )
+
+    data = _load_recent_premiums()
+    stats = _compute_market_stats(data)
+    latest = stats.get("latest")
+
+    # Round latest Cat A to nearest $5K to feel like a "range" anchor.
+    if latest:
+        anchor_k = round(latest["catA"] / 5000) * 5000 // 1000
+        outlook_line = (
+            f"**Most probable outcome:** Cat A premiums ease from the current "
+            f"~\\${anchor_k}K range toward \\$85K-\\$95K by late 2026 to mid-2027, "
+            f"then stabilise or rebound. The window is real but narrower than the "
+            f"market expects."
+        )
+    else:
+        outlook_line = (
+            "**Most probable outcome:** Cat A premiums ease toward \\$85K-\\$95K by "
+            "late 2026 to mid-2027, then stabilise or rebound."
+        )
+    st.markdown(outlook_line)
 
     st.markdown("")
     m1, m2, m3, m4 = st.columns(4)
 
-    data = _load_recent_premiums()
-    latest = data[-1] if data else None
-    prior = data[-2] if len(data) >= 2 else None
+    prior = stats.get("prior")
 
     def _delta(curr, prev):
         if curr is None or prev is None:
@@ -297,27 +611,79 @@ def _render_overview():
         m1.metric("Cat A", "—")
         m2.metric("Cat B", "—")
 
-    # Quota and PQP come from separate sources not yet wired to SQLite —
-    # leave hardcoded for now.
-    m3.metric("Feb-Apr 26 Quota", "18,824", delta="-160 from prev qtr")
-    m4.metric("PQP Cat A (Apr 26)", "$107,407", delta="-$6,597 from Jan")
+    quota = _load_latest_quota()
+    if quota:
+        delta_label = (
+            f"{quota['delta']:+,} from prev qtr" if quota["delta"] is not None else None
+        )
+        m3.metric(f"{quota['period']} Quota", f"{quota['total']:,}", delta=delta_label)
+    else:
+        m3.metric("Quota", "—")
+
+    # PQP not yet sourced from LTA — show a 3-round trailing avg as a proxy.
+    pqp = _pqp_proxy_3mo(data, "catA")
+    if pqp:
+        delta = f"{'+' if pqp['delta'] >= 0 else '−'}${abs(pqp['delta']):,.0f}"
+        m4.metric(
+            f"Cat A 3-round avg (proxy PQP)",
+            f"${pqp['recent']:,.0f}",
+            delta=f"{delta} vs prior 3 rounds",
+            delta_color="inverse",
+        )
+    else:
+        m4.metric("Cat A 3-round avg (proxy PQP)", "—")
 
 
 def _render_trajectory():
-    st.markdown(
-        "Since the Oct 2025 spike (Cat A hit \\$128K, Cat B hit \\$141K), premiums have corrected "
-        "meaningfully — roughly 13% for Cat A and 18% for Cat B. But the trend since Jan 2026 "
-        "has been a steady grind upward again, with both categories climbing across four "
-        "consecutive exercises."
-    )
-    st.markdown("")
-    st.markdown(
-        "The Cat A-Cat B gap narrowed to as little as ~\\$5K in late 2025, making Cat B a "
-        "\"no-brainer\" upgrade. That gap has now widened slightly to ~\\$3.7K, but remains "
-        "unusually tight by historical standards."
-    )
+    data = _load_recent_premiums()
+    stats = _compute_market_stats(data)
 
-    df = pd.DataFrame(_load_recent_premiums())
+    if stats:
+        # Peak narrative — only describe a "spike" if both peaks aren't the
+        # latest round (which would mean we're at the peak, not past it).
+        peak_a = stats["peak_a"]
+        peak_b = stats["peak_b"]
+        peak_period_a = stats["peak_a_period"]
+        corr_a = stats["correction_pct_a"]
+        corr_b = stats["correction_pct_b"]
+        rises_a = stats["consecutive_rises_a"]
+
+        if corr_a > 1 or corr_b > 1:
+            spike_line = (
+                f"The recent peak was **{peak_period_a}** (Cat A hit \\${peak_a:,.0f}, "
+                f"Cat B hit \\${peak_b:,.0f}). Since then, premiums have moved "
+                f"{corr_a:+.1f}% on Cat A and {corr_b:+.1f}% on Cat B."
+            )
+        else:
+            spike_line = (
+                f"Cat A and Cat B are at or near their window peak "
+                f"(\\${peak_a:,.0f} / \\${peak_b:,.0f}, {peak_period_a}) — "
+                f"no meaningful correction yet."
+            )
+
+        if rises_a >= 2:
+            trend_line = (
+                f" The recent direction has been upward — Cat A has risen across "
+                f"**{rises_a} consecutive exercise{'s' if rises_a != 1 else ''}**."
+            )
+        else:
+            trend_line = ""
+
+        st.markdown(spike_line + trend_line)
+    else:
+        st.markdown("Premium history unavailable.")
+
+    st.markdown("")
+
+    if stats:
+        gap_line = (
+            f"The Cat A-Cat B gap narrowed to as little as **\\${stats['min_gap']:,.0f}** "
+            f"in {stats['min_gap_period']}, making Cat B a near-no-brainer upgrade in that "
+            f"window. That gap is now **\\${stats['current_gap']:,.0f}**."
+        )
+        st.markdown(gap_line)
+
+    df = pd.DataFrame(data)
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=df["period"], y=df["catA"], name="Cat A (<1600cc)",
@@ -341,23 +707,55 @@ def _render_trajectory():
     )
     st.plotly_chart(fig, use_container_width=True)
 
-    st.markdown("**Key Observation: The \"Post-Spike Plateau\"**")
-    st.markdown(
-        "After the Oct 2025 record spike, premiums corrected but have not returned to mid-2025 "
-        "levels (~\\$95K-\\$101K for Cat A). Instead they've formed a new elevated floor around "
-        "\\$106K-\\$112K. This is the plateau pattern — each cycle's correction lands at a higher "
-        "base than the previous one."
-    )
-    st.markdown("")
-    st.markdown(
-        "The PQP (Prevailing Quota Premium) for Cat A has declined from \\$114K in January to "
-        "\\$107K in April — a positive sign for prospective buyers, since PQP represents the "
-        "3-month moving average and signals the directional trend."
-    )
+    st.markdown("**Key Observation: Where the post-peak floor is forming**")
 
-    pq1, pq2 = st.columns(2)
-    pq1.metric("PQP Cat A (Jan 26)", "$114,004")
-    pq2.metric("PQP Cat A (Apr 26)", "$107,407", delta="-$6,597", delta_color="normal")
+    # Compute "post-peak" range from rounds AFTER the Cat A peak.
+    if stats and len(data) >= 3:
+        peak_idx = max(range(len(data)), key=lambda i: data[i]["catA"])
+        post_peak = data[peak_idx + 1 :]
+        if post_peak:
+            lo = min(r["catA"] for r in post_peak)
+            hi = max(r["catA"] for r in post_peak)
+            st.markdown(
+                f"After the **{stats['peak_a_period']}** Cat A peak "
+                f"(\\${stats['peak_a']:,.0f}), subsequent rounds have ranged "
+                f"\\${lo:,.0f}–\\${hi:,.0f}. If this floor holds higher than the "
+                f"prior cycle's, we're seeing the plateau pattern — each correction "
+                f"lands at a higher base than the previous one."
+            )
+        else:
+            st.markdown(
+                f"Cat A is currently at its window peak (\\${stats['peak_a']:,.0f}) — "
+                f"the post-peak floor hasn't formed yet."
+            )
+    st.markdown("")
+
+    # PQP block — using a 3-round trailing avg as a proxy until LTA's actual
+    # PQP feed is wired into SQLite.
+    pqp = _pqp_proxy_3mo(data, "catA")
+    if pqp:
+        direction = "declined" if pqp["delta"] < 0 else "risen"
+        st.markdown(
+            f"The 3-round trailing average for Cat A (a proxy for LTA's "
+            f"3-month PQP) has **{direction}** from \\${pqp['prior']:,.0f} in the "
+            f"previous 3-round window to \\${pqp['recent']:,.0f} now — "
+            f"a {'positive' if pqp['delta'] < 0 else 'cautionary'} signal for "
+            f"prospective buyers."
+        )
+
+        pq1, pq2 = st.columns(2)
+        pq1.metric(f"3-round avg (prior window)", f"${pqp['prior']:,.0f}")
+        pq2.metric(
+            f"3-round avg (current window)",
+            f"${pqp['recent']:,.0f}",
+            delta=f"{'+' if pqp['delta'] >= 0 else '−'}${abs(pqp['delta']):,.0f}",
+            delta_color="inverse",
+        )
+        st.caption(
+            "Proxy for LTA's PQP (Prevailing Quota Premium), which is the official "
+            "3-month moving average — wired here from `coe_results` until the "
+            "official PQP feed is added."
+        )
 
 
 def _render_cycle():
@@ -525,6 +923,48 @@ def _render_buying_window():
     )
 
 
+_STATUS_DOTS = {
+    "OK": ("🟢", "OK"),
+    "WATCH": ("🟡", "WATCH"),
+    "STALE": ("🔴", "STALE"),
+    "UNKNOWN": ("⚪", "?"),
+}
+
+
+def _render_thesis_health(stats: dict) -> None:
+    """Surface each thesis claim with a status dot so authors know what to revisit."""
+    audit = _audit_thesis(stats)
+
+    counts = {"OK": 0, "WATCH": 0, "STALE": 0, "UNKNOWN": 0}
+    for _, status, _ in audit:
+        counts[status] = counts.get(status, 0) + 1
+
+    summary = (
+        f"🟢 {counts['OK']}  ·  🟡 {counts['WATCH']}  ·  🔴 {counts['STALE']}"
+        f"{'  ·  ⚪ ' + str(counts['UNKNOWN']) if counts['UNKNOWN'] else ''}"
+    )
+
+    expand = counts["STALE"] > 0 or counts["WATCH"] > 0
+    label = (
+        f"Thesis health  ·  {summary}  ·  authored {THESIS_DATE:%b %Y}"
+    )
+    with st.expander(label, expanded=expand):
+        st.caption(
+            "Each row checks one numeric or temporal claim from the prose against "
+            "current data. 🔴 means the claim's anchor no longer holds — the "
+            "narrative section needs a rewrite. 🟡 means it's drifting."
+        )
+        for anchor, status, explanation in audit:
+            dot, status_label = _STATUS_DOTS.get(status, _STATUS_DOTS["UNKNOWN"])
+            st.markdown(
+                f"{dot} **{anchor['claim']}** "
+                f"<span style='opacity:0.6; font-size:0.85rem'>· "
+                f"{anchor['tab']} · {status_label}</span>",
+                unsafe_allow_html=True,
+            )
+            st.caption(explanation)
+
+
 # ─── Main Render ─────────────────────────────────────────────────────────────
 
 def render():
@@ -552,6 +992,10 @@ def render():
         f"Latest bidding round: **{latest_period}** · "
         f"Data refreshed: {refreshed_label}"
     )
+
+    # Thesis health audit — one row per claim, expanded if anything is amber/red.
+    stats = _compute_market_stats(data)
+    _render_thesis_health(stats)
 
     st.markdown("")
 
