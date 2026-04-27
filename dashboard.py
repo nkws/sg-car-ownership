@@ -1,3 +1,23 @@
+"""Streamlit Dashboard for SG Car Ownership Financial Profiling."""
+
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
+
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import json
+from database import get_conn, init_db
+from config import SIGNAL_FILE, DB_PATH, SEGMENT_THRESHOLDS
+
+st.set_page_config(
+    page_title="Singapore Car Ownership: Affordability, COE & Household Stress Index",
+    page_icon="🚗",
+    layout="wide",
+)
+
 # ─── Custom Styling ──────────────────────────────────────────────────────────
 
 st.markdown("""
