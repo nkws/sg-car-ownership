@@ -552,6 +552,9 @@ def _audit_thesis(stats: dict, today: datetime | None = None) -> list[tuple[dict
 # ─── Render Functions ────────────────────────────────────────────────────────
 
 def _render_overview():
+    st.caption(
+        "Where Cat A and Cat B are now, and the analyst's call on where they're heading."
+    )
     st.markdown(
         "Singapore's COE market is entering the early stages of a structural supply expansion "
         "driven by the 10-year deregistration wave from the 2016-2017 registration boom. "
@@ -635,6 +638,10 @@ def _render_overview():
 
 
 def _render_trajectory():
+    st.caption(
+        "Round-by-round premiums since the last record peak, and what the 3-round "
+        "trailing average says about direction."
+    )
     data = _load_recent_premiums()
     stats = _compute_market_stats(data)
 
@@ -759,6 +766,10 @@ def _render_trajectory():
 
 
 def _render_cycle():
+    st.caption(
+        "Why supply swings every decade — boom → famine → feast — and why this "
+        "cycle won't replay the last one cleanly."
+    )
     st.markdown(
         "The COE system creates an inherent ~10-year cycle. When many cars are registered in a "
         "boom period, those COEs expire a decade later, flooding supply and depressing prices — "
@@ -819,6 +830,10 @@ def _render_cycle():
 
 
 def _render_forces():
+    st.caption(
+        "Tug-of-war between forces pushing premiums down (more supply, recession risk) "
+        "and forces pushing them up (demand, policy)."
+    )
     st.markdown(
         "The dip cycle isn't a single narrative. It's a tug of war between structural supply "
         "tailwinds and persistent demand headwinds."
@@ -873,6 +888,10 @@ def _render_forces():
 
 
 def _render_buying_window():
+    st.caption(
+        "Quarter-by-quarter projection plus a tactical strategy for prospective buyers, "
+        "anchored around the EEAI Jan 2027 deadline."
+    )
     st.markdown(
         "Based on the supply cycle, PARF dynamics, EEAI sunset, and demand signals, "
         "here's a quarter-by-quarter projection:"
@@ -921,6 +940,72 @@ def _render_buying_window():
         "and year-end sentiment is weakest, while EEAI is still intact. That's your "
         "convergence point — maximum supply, softened demand, and full incentive stack."
     )
+
+
+# ─── Glossary ────────────────────────────────────────────────────────────────
+
+GLOSSARY: list[tuple[str, str]] = [
+    ("COE",
+     "Certificate of Entitlement — the right to register a car for 10 years. "
+     "LTA auctions a fixed quota twice a month; the clearing price is the "
+     "premium you pay on top of the car's price."),
+    ("Cat A / Cat B",
+     "Cat A: cars ≤1600cc and ≤130bhp (mass-market). "
+     "Cat B: cars >1600cc or >130bhp (larger / luxury / most EVs). "
+     "Each category has its own quota and clearing price."),
+    ("Bidding round (R1 / R2)",
+     "Each month has two bidding exercises. R1 closes 1st-2nd week, "
+     "R2 closes 3rd-4th week. Premium changes between rounds are the "
+     "highest-frequency signal of where the market is heading."),
+    ("Quota",
+     "How many COEs LTA releases per quarter, set on a 4-quarter rolling "
+     "average of deregistrations + a small policy adjustment. Tighter quota "
+     "→ higher premiums."),
+    ("Deregistration",
+     "When an owner scraps or exports a car. Frees up a COE that LTA can "
+     "re-issue. The 10-year cycle creates waves of deregistrations a decade "
+     "after each registration boom."),
+    ("Feast / Famine",
+     "The cyclic supply pattern this section tracks. **Feast**: many cars "
+     "bought 10 years ago hit deregistration → COE supply rises → premiums "
+     "ease. **Famine**: few cars were registered a decade ago → tight supply "
+     "→ premiums climb."),
+    ("PARF",
+     "Preferential Additional Registration Fee — a partial rebate paid back "
+     "when you scrap a car within 10 years. Cut in Budget 2026, weakening "
+     "the incentive to scrap early and so reducing future COE recycling."),
+    ("PQP",
+     "Prevailing Quota Premium — the 3-month moving average of COE prices, "
+     "used as the renewal price if you keep a car past 10 years. Tracks the "
+     "trend more smoothly than round-by-round premiums."),
+    ("OMV",
+     "Open Market Value — the LTA-assessed import cost of a car (CIF + "
+     "incidental costs), the basis for ARF and other vehicle taxes."),
+    ("EEAI",
+     "EV Early Adoption Incentive — a rebate (currently up to ~S$30K) that "
+     "reduces the cost of registering an EV. Sunsets 1 Jan 2027, after which "
+     "the rebate drops to S$0."),
+    ("VES",
+     "Vehicle Emissions Scheme — surcharge or rebate at registration based "
+     "on the car's CO₂/NOx/HC/CO bands. Stacks with EEAI for EVs."),
+    ("VGR",
+     "Vehicle Growth Rate — the policy cap on net growth of Singapore's "
+     "vehicle population. Currently 0%, meaning every new COE has to come "
+     "from a deregistration."),
+]
+
+
+def _render_glossary() -> None:
+    """Compact two-column glossary, collapsed by default."""
+    with st.expander("📖 Glossary — terms you'll see in this section", expanded=False):
+        c1, c2 = st.columns(2)
+        midpoint = (len(GLOSSARY) + 1) // 2
+        for term, definition in GLOSSARY[:midpoint]:
+            with c1:
+                st.markdown(f"**{term}** — {definition}")
+        for term, definition in GLOSSARY[midpoint:]:
+            with c2:
+                st.markdown(f"**{term}** — {definition}")
 
 
 _STATUS_DOTS = {
@@ -972,9 +1057,11 @@ def render():
     st.markdown('<div class="section-header">COE Market Analysis</div>',
                 unsafe_allow_html=True)
     st.caption(
-        "A structural analysis of supply dynamics, policy shifts, and the "
-        "feast-famine rhythm that governs Singapore's COE market."
+        "Where Singapore's COE premiums — the price of the right to own a car "
+        "for 10 years — are heading, and why. All figures in SGD."
     )
+
+    _render_glossary()
 
     # Freshness badge — shows the latest bidding round in the cache and when
     # the underlying coe_results table was last refreshed.
@@ -990,7 +1077,8 @@ def render():
         refreshed_label = "never (run `python3 run_pipeline.py`)"
     st.caption(
         f"Latest bidding round: **{latest_period}** · "
-        f"Data refreshed: {refreshed_label}"
+        f"Data refreshed: {refreshed_label} · "
+        f"_Stale? Click **Refresh Data** at the top of the dashboard._"
     )
 
     # Thesis health audit — one row per claim, expanded if anything is amber/red.
