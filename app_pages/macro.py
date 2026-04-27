@@ -6,10 +6,23 @@ between index and detail is driven by session state because Streamlit does
 not expose nested URL paths.
 """
 
+import plotly.graph_objects as go
 import streamlit as st
 
 from analysts import ANALYSTS
 from models.analyst import Analyst
+
+
+# Category palette for the signal scatter — distinct hues, readable on
+# Streamlit's default light/dark themes.
+SIGNAL_CATEGORY_COLORS: dict[str, str] = {
+    "geopolitical": "#4e79a7",
+    "economic": "#f28e2b",
+    "technology": "#59a14f",
+    "security": "#e15759",
+    "energy": "#edc948",
+    "other": "#b07aa1",
+}
 
 
 st.set_page_config(
@@ -98,6 +111,63 @@ def _render_index() -> None:
             _render_card(a)
 
 
+def _render_signal_scatter(signals: list) -> None:
+    """Plot signals on a severity (y) × velocity (x) grid, colored by category.
+
+    Markers from the same category share a legend entry so users can toggle
+    categories on/off. Each marker labels the signal name above the point.
+    """
+    if not signals:
+        st.info("No signals tracked yet.")
+        return
+
+    fig = go.Figure()
+
+    # Group by category so each shows up once in the legend.
+    by_category: dict[str, list] = {}
+    for s in signals:
+        by_category.setdefault(s["category"], []).append(s)
+
+    for category, group in by_category.items():
+        color = SIGNAL_CATEGORY_COLORS.get(category, "#888888")
+        fig.add_trace(go.Scatter(
+            x=[s["velocity"] for s in group],
+            y=[s["severity"] for s in group],
+            mode="markers+text",
+            marker=dict(size=18, color=color, opacity=0.75,
+                        line=dict(width=1, color="white")),
+            text=[s["name"] for s in group],
+            textposition="top center",
+            textfont=dict(size=10),
+            name=category,
+            customdata=[[s["name"], s["category"]] for s in group],
+            hovertemplate=(
+                "<b>%{customdata[0]}</b><br>"
+                "Category: %{customdata[1]}<br>"
+                "Severity: %{y}/10<br>"
+                "Velocity: %{x}/10"
+                "<extra></extra>"
+            ),
+        ))
+
+    # Quadrant guides at the midpoint.
+    fig.add_vline(x=5, line_dash="dot", line_color="#999999", opacity=0.4)
+    fig.add_hline(y=5, line_dash="dot", line_color="#999999", opacity=0.4)
+
+    fig.update_layout(
+        template="streamlit",
+        height=450,
+        xaxis=dict(title="Velocity (how fast it's evolving)",
+                   range=[-0.5, 10.5], dtick=2),
+        yaxis=dict(title="Severity (consequence if it plays out)",
+                   range=[-0.5, 10.5], dtick=2),
+        margin=dict(t=20, b=40, l=60, r=20),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.25,
+                    xanchor="center", x=0.5),
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
 def _framework_status_cell(status: str) -> str:
     cls = {
         "active": "framework-active",
@@ -134,26 +204,13 @@ def _render_detail(a: Analyst) -> None:
     ]
     st.dataframe(fw_rows, use_container_width=True, hide_index=True)
 
-    # Top signals / risks — rendered as a styled table for now
-    # (charting library decision deferred).
+    # Top signals / risks — severity × velocity scatter, colored by category.
     st.markdown("<div class='section-header'>Top signals / risks</div>", unsafe_allow_html=True)
-    sig_rows = sorted(
-        (
-            {
-                "Signal": s["name"],
-                "Category": s["category"],
-                "Severity (0–10)": s["severity"],
-                "Velocity (0–10)": s["velocity"],
-            }
-            for s in a["signals"]
-        ),
-        key=lambda r: (r["Severity (0–10)"], r["Velocity (0–10)"]),
-        reverse=True,
-    )
-    st.dataframe(sig_rows, use_container_width=True, hide_index=True)
+    _render_signal_scatter(a["signals"])
     st.caption(
         "Severity = consequence if it plays out. "
-        "Velocity = how quickly it is evolving."
+        "Velocity = how quickly it is evolving. "
+        "Top-right quadrant = high impact and moving fast."
     )
 
     # Recent episode log
