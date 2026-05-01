@@ -9,8 +9,14 @@ not expose nested URL paths.
 import plotly.graph_objects as go
 import streamlit as st
 
-from analysts import ANALYSTS
+from analysts import ANALYSTS, refresh_live_analysts
 from models.analyst import Analyst
+
+# Streamlit re-executes this script on every interaction; refreshing here
+# keeps the analyst dicts in sync with their live data sources (e.g. the
+# Galloway RSS cache), which would otherwise stay frozen at the snapshot
+# captured when the analyst module was first imported.
+refresh_live_analysts()
 
 
 # Category palette for the signal scatter — distinct hues, readable on
