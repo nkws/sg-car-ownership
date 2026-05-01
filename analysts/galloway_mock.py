@@ -1,10 +1,82 @@
-"""Mock data for Scott Galloway — placeholder until the real pipeline runs.
+"""Data module for Scott Galloway.
 
-Replace this module wholesale when the ingestion / synthesis pipeline
-lands. Keep the `GALLOWAY: Analyst` export name stable.
+Bio, framework tracker, top signals, and the prose synthesis are
+hand-curated below. `recent_items` is overlaid from the No Mercy /
+No Malice RSS feed when reachable; if the feed is down, the static
+fallback list below is used so the dashboard always renders.
 """
 
+from collectors.galloway_rss import fetch_galloway_items
 from models.analyst import Analyst
+
+
+_FALLBACK_RECENT_ITEMS = [
+    {
+        "title": "The AI capex circle is starting to bite its own tail",
+        "source": "No Mercy / No Malice (newsletter)",
+        "url": "https://www.profgalloway.com/",
+        "published": "2026-04-12",
+        "summary": (
+            "Argues hyperscaler–frontier-lab vendor financing has the "
+            "structural shape of late-1999 telecom, even if the "
+            "underlying tech is real."
+        ),
+    },
+    {
+        "title": "Pivot: Tesla's demand problem is finally legible",
+        "source": "Pivot (podcast)",
+        "url": "https://www.voxmedia.com/podcasts/pivot",
+        "published": "2026-04-11",
+        "summary": (
+            "With Kara Swisher. Lease residuals, not delivery numbers, "
+            "are the cleanest read on Tesla demand; residuals are down "
+            "materially YoY."
+        ),
+    },
+    {
+        "title": "The Prof G Pod: Why the 'young men' story won't go away",
+        "source": "The Prof G Pod",
+        "url": "https://www.profgmedia.com/",
+        "published": "2026-04-09",
+        "summary": (
+            "Revisits his under-30-male thesis with updated 2026 data "
+            "on enrolment, homeownership, and overdose mortality."
+        ),
+    },
+    {
+        "title": "Keynote: The Algebra of Wealth, 2026 edition",
+        "source": "SXSW",
+        "url": "https://www.sxsw.com/",
+        "published": "2026-04-07",
+        "summary": (
+            "Updated 'stoicism + focus + time + diversification' talk "
+            "with a sharper section on AI-era human capital strategy."
+        ),
+    },
+    {
+        "title": "No Mercy / No Malice: Ozempic is a retail story, not a pharma story",
+        "source": "No Mercy / No Malice (newsletter)",
+        "url": "https://www.profgalloway.com/",
+        "published": "2026-04-05",
+        "summary": (
+            "Frames GLP-1 adoption as a demand-side shock to packaged "
+            "food, fast-casual, and even airline margins."
+        ),
+    },
+]
+
+
+def _resolve_recent_items() -> list:
+    live = fetch_galloway_items(limit=5)
+    return live if live else _FALLBACK_RECENT_ITEMS
+
+
+_RECENT_ITEMS = _resolve_recent_items()
+_LAST_UPDATED = (
+    _RECENT_ITEMS[0]["published"]
+    if _RECENT_ITEMS and _RECENT_ITEMS[0].get("published")
+    else "2026-04-14"
+)
 
 
 GALLOWAY: Analyst = {
@@ -18,7 +90,7 @@ GALLOWAY: Analyst = {
         "(The Four, T-Algorithm) and a growing body of work on economic "
         "and relational outcomes for young American men."
     ),
-    "last_updated": "2026-04-14",
+    "last_updated": _LAST_UPDATED,
     "latest_content": (
         "Galloway's dominant theme this week is that the AI capex cycle is "
         "starting to look like late-stage dotcom in two specific ways: "
@@ -33,60 +105,7 @@ GALLOWAY: Analyst = {
         "is still aimed at the wrong cohort. Tertiary: Tesla demand unwind "
         "is now visible in lease residuals, not just deliveries."
     ),
-    "recent_items": [
-        {
-            "title": "The AI capex circle is starting to bite its own tail",
-            "source": "No Mercy / No Malice (newsletter)",
-            "url": "https://www.profgalloway.com/",
-            "published": "2026-04-12",
-            "summary": (
-                "Argues hyperscaler–frontier-lab vendor financing has the "
-                "structural shape of late-1999 telecom, even if the "
-                "underlying tech is real."
-            ),
-        },
-        {
-            "title": "Pivot: Tesla's demand problem is finally legible",
-            "source": "Pivot (podcast)",
-            "url": "https://www.voxmedia.com/podcasts/pivot",
-            "published": "2026-04-11",
-            "summary": (
-                "With Kara Swisher. Lease residuals, not delivery numbers, "
-                "are the cleanest read on Tesla demand; residuals are down "
-                "materially YoY."
-            ),
-        },
-        {
-            "title": "The Prof G Pod: Why the 'young men' story won't go away",
-            "source": "The Prof G Pod",
-            "url": "https://www.profgmedia.com/",
-            "published": "2026-04-09",
-            "summary": (
-                "Revisits his under-30-male thesis with updated 2026 data "
-                "on enrolment, homeownership, and overdose mortality."
-            ),
-        },
-        {
-            "title": "Keynote: The Algebra of Wealth, 2026 edition",
-            "source": "SXSW",
-            "url": "https://www.sxsw.com/",
-            "published": "2026-04-07",
-            "summary": (
-                "Updated 'stoicism + focus + time + diversification' talk "
-                "with a sharper section on AI-era human capital strategy."
-            ),
-        },
-        {
-            "title": "No Mercy / No Malice: Ozempic is a retail story, not a pharma story",
-            "source": "No Mercy / No Malice (newsletter)",
-            "url": "https://www.profgalloway.com/",
-            "published": "2026-04-05",
-            "summary": (
-                "Frames GLP-1 adoption as a demand-side shock to packaged "
-                "food, fast-casual, and even airline margins."
-            ),
-        },
-    ],
+    "recent_items": _RECENT_ITEMS,
     "frameworks": [
         {
             "name": "The Four / T-Algorithm",
