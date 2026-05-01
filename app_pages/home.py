@@ -18,7 +18,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from analysts import ANALYSTS
+from analysts import ANALYSTS, refresh_live_analysts
 from config import SIGNAL_FILE
 from models.coe_reversal import detect_reversal
 from models.profile import (
@@ -29,6 +29,12 @@ from models.profile import (
 )
 from models.ratio_model import stress_test as _stress_test
 from models.verdict import compute_verdict
+
+# Streamlit re-executes this script on every interaction; refreshing here
+# keeps the analyst dicts in sync with their live data sources (e.g. the
+# Galloway RSS cache), which would otherwise stay frozen at the snapshot
+# captured when the analyst module was first imported.
+refresh_live_analysts()
 
 
 SIGNAL_CATEGORY_COLORS: dict[str, str] = {
