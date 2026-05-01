@@ -1,9 +1,8 @@
-"""Macro page — overview + thought leaders.
+"""Thought Leaders page.
 
-Sub-nav via st.tabs. The Thought Leaders tab shows a grid of analyst cards;
-selecting one swaps the tab contents to that analyst's profile. Navigation
-between index and detail is driven by session state because Streamlit does
-not expose nested URL paths.
+Shows a grid of analyst cards; selecting one swaps the contents to that
+analyst's profile. Navigation between index and detail is driven by session
+state because Streamlit does not expose nested URL paths.
 """
 
 import plotly.graph_objects as go
@@ -26,8 +25,8 @@ SIGNAL_CATEGORY_COLORS: dict[str, str] = {
 
 
 st.set_page_config(
-    page_title="Macro — Singapore Car Ownership: Affordability, COE & Household Stress Index",
-    page_icon="🌐",
+    page_title="Thought Leaders — Singapore Car Ownership: Affordability, COE & Household Stress Index",
+    page_icon="🧠",
     layout="wide",
 )
 
@@ -64,22 +63,6 @@ st.markdown(
 )
 
 
-# ─── Sub-nav ─────────────────────────────────────────────────────────────────
-
-overview_tab, leaders_tab = st.tabs(["Overview", "Thought Leaders"])
-
-
-# ─── Overview ────────────────────────────────────────────────────────────────
-
-with overview_tab:
-    st.markdown("## Macro Overview")
-    st.caption(
-        "Cross-cutting macro indicators that complement the COE-specific "
-        "analysis on the main dashboard."
-    )
-    st.info("Coming soon — this page will be populated in a later session.")
-
-
 # ─── Thought Leaders ─────────────────────────────────────────────────────────
 
 SELECTED_KEY = "selected_analyst"
@@ -102,7 +85,7 @@ def _render_card(a: Analyst) -> None:
 def _render_index() -> None:
     st.markdown("## Thought Leaders")
     st.caption(
-        "Macro analysts we track for framework evolution and signal shifts."
+        "Analysts we track for framework evolution and signal shifts."
     )
     analysts = list(ANALYSTS.values())
     cols = st.columns(3)
@@ -222,9 +205,8 @@ def _render_detail(a: Analyst) -> None:
             st.write(item["summary"])
 
 
-with leaders_tab:
-    selected = st.session_state.get(SELECTED_KEY)
-    if selected and selected in ANALYSTS:
-        _render_detail(ANALYSTS[selected])
-    else:
-        _render_index()
+selected = st.session_state.get(SELECTED_KEY)
+if selected and selected in ANALYSTS:
+    _render_detail(ANALYSTS[selected])
+else:
+    _render_index()

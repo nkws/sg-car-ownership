@@ -1,9 +1,9 @@
 """Multi-page entry point.
 
 Top-level navigation (rendered by st.navigation):
-  Home   — at-a-glance landing page (app_pages/home.py)
-  COE    — existing financial-stress dashboard (dashboard.py, untouched)
-  Macro  — overview + thought leaders (app_pages/macro.py)
+  Home             — personal daily briefing (app_pages/home.py)
+  COE              — financial-stress dashboard (dashboard.py)
+  Thought Leaders  — analyst profiles (app_pages/thought_leaders.py)
 
 Each page script owns its own st.set_page_config so dashboard.py's
 existing configuration keeps working without modification.
@@ -24,12 +24,12 @@ coe_page = st.Page(
     title="COE",
     icon="🚗",
 )
-macro_page = st.Page(
-    "app_pages/macro.py",
-    title="Macro",
-    icon="🌐",
-    url_path="macro",
+thought_leaders_page = st.Page(
+    "app_pages/thought_leaders.py",
+    title="Thought Leaders",
+    icon="🧠",
+    url_path="thought-leaders",
 )
 
-pg = st.navigation([home_page, coe_page, macro_page])
+pg = st.navigation([home_page, coe_page, thought_leaders_page])
 pg.run()
