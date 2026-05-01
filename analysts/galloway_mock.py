@@ -66,17 +66,30 @@ _FALLBACK_RECENT_ITEMS = [
 ]
 
 
+_FALLBACK_LAST_UPDATED = "2026-04-14"
+
+
 def _resolve_recent_items() -> list:
     live = fetch_galloway_items(limit=5)
     return live if live else _FALLBACK_RECENT_ITEMS
 
 
-_RECENT_ITEMS = _resolve_recent_items()
-_LAST_UPDATED = (
-    _RECENT_ITEMS[0]["published"]
-    if _RECENT_ITEMS and _RECENT_ITEMS[0].get("published")
-    else "2026-04-14"
-)
+def _last_updated_from(items: list) -> str:
+    if items and items[0].get("published"):
+        return items[0]["published"]
+    return _FALLBACK_LAST_UPDATED
+
+
+def refresh_galloway() -> None:
+    """Re-pull recent items from the RSS source and update GALLOWAY in place.
+
+    The page script (Streamlit re-runs it on every interaction) calls this so
+    the in-memory analyst dict tracks the on-disk feed cache. The fetch itself
+    is gated by the 6-hour TTL in `collectors.galloway_rss`.
+    """
+    items = _resolve_recent_items()
+    GALLOWAY["recent_items"] = items
+    GALLOWAY["last_updated"] = _last_updated_from(items)
 
 
 GALLOWAY: Analyst = {
@@ -90,7 +103,7 @@ GALLOWAY: Analyst = {
         "(The Four, T-Algorithm) and a growing body of work on economic "
         "and relational outcomes for young American men."
     ),
-    "last_updated": _LAST_UPDATED,
+    "last_updated": _FALLBACK_LAST_UPDATED,
     "latest_content": (
         "Galloway's dominant theme this week is that the AI capex cycle is "
         "starting to look like late-stage dotcom in two specific ways: "
@@ -105,7 +118,7 @@ GALLOWAY: Analyst = {
         "is still aimed at the wrong cohort. Tertiary: Tesla demand unwind "
         "is now visible in lease residuals, not just deliveries."
     ),
-    "recent_items": _RECENT_ITEMS,
+    "recent_items": _FALLBACK_RECENT_ITEMS,
     "frameworks": [
         {
             "name": "The Four / T-Algorithm",
@@ -190,3 +203,6 @@ GALLOWAY: Analyst = {
         },
     ],
 }
+
+
+refresh_galloway()
