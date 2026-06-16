@@ -6,7 +6,8 @@ feast-famine rhythm that governs Singapore's COE market.
 Published: March 2026
 """
 
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 
 import streamlit as st
 import plotly.graph_objects as go
@@ -367,6 +368,104 @@ def _load_coe_freshness() -> str | None:
         return row["last_updated"] if row else None
     except Exception:
         return None
+
+
+# ─── Shared synthesis helpers ─────────────────────────────────────────────────
+#
+# These are pure (no Streamlit) so the Bid Outlook engine (models/coe_outcomes)
+# can reuse the exact same force balance and quarterly-band logic the render
+# functions use — one source of truth.
+
+def force_net() -> dict:
+    """Net structural force pressure from FORCE_DATA.
+
+    Sums force magnitudes by direction and returns the totals plus a signed
+    net (up − down) and a coarse lean. Shared by the Market Forces tab and the
+    outcome engine so both report the same numbers.
+    """
+    down_total = sum(f["magnitude"] for f in FORCE_DATA if f["direction"] == "down")
+    up_total = sum(f["magnitude"] for f in FORCE_DATA if f["direction"] == "up")
+    net = up_total - down_total
+    if net > 50:
+        lean = "up"
+    elif net < -50:
+        lean = "down"
+    else:
+        lean = "balanced"
+    return {"up_total": up_total, "down_total": down_total, "net": net, "lean": lean}
+
+
+# Map a quarter number to its (first month, last month).
+_QUARTER_MONTHS = {1: (1, 3), 2: (4, 6), 3: (7, 9), 4: (10, 12)}
+
+
+def _parse_band(range_str: str) -> tuple[int, int] | None:
+    """Parse a QUARTERLY_OUTLOOK range string into (low, high) dollar ints.
+
+    e.g. '\\$105K - \\$115K' -> (105000, 115000). Returns None if it can't
+    find two K-suffixed numbers (defensive against format changes).
+    """
+    if not range_str:
+        return None
+    nums = re.findall(r"(\d+(?:\.\d+)?)\s*[Kk]", range_str)
+    if len(nums) < 2:
+        return None
+    return int(float(nums[0]) * 1000), int(float(nums[1]) * 1000)
+
+
+def _band_date_span(quarter_label: str) -> tuple[datetime, datetime] | None:
+    """Derive (start, end) datetimes from a quarter label.
+
+    Handles 'Q3 2026 (Jul-Sep)' and range labels like 'Q2-Q3 2027'.
+    """
+    quarters = [int(q) for q in re.findall(r"Q(\d)", quarter_label)]
+    years = [int(y) for y in re.findall(r"(20\d{2})", quarter_label)]
+    if not quarters or not years:
+        return None
+    year = years[0]
+    start_month = _QUARTER_MONTHS[quarters[0]][0]
+    end_month = _QUARTER_MONTHS[quarters[-1]][1]
+    start = datetime(year, start_month, 1)
+    if end_month == 12:
+        end = datetime(year, 12, 31)
+    else:
+        end = datetime(year, end_month + 1, 1) - timedelta(days=1)
+    return start, end
+
+
+def _band_index_for(today: datetime) -> int | None:
+    """Index of the QUARTERLY_OUTLOOK entry whose span contains `today`."""
+    for i, item in enumerate(QUARTERLY_OUTLOOK):
+        span = _band_date_span(item["quarter"])
+        if span and span[0] <= today <= span[1]:
+            return i
+    return None
+
+
+def quarter_band_for(today: datetime | None = None, offset: int = 0) -> dict | None:
+    """The curated outlook band for `today`'s quarter, or `offset` quarters on.
+
+    offset=0 → the quarter containing today; offset=1 → the next listed quarter.
+    Returns {quarter, low, high, outlook, note} with low/high parsed from the
+    range string (None if the range couldn't be parsed), or None if there's no
+    matching entry (e.g. today is past QUARTERLY_OUTLOOK's coverage).
+    """
+    today = today or datetime.now()
+    idx = _band_index_for(today)
+    if idx is None:
+        return None
+    j = idx + offset
+    if not (0 <= j < len(QUARTERLY_OUTLOOK)):
+        return None
+    item = QUARTERLY_OUTLOOK[j]
+    parsed = _parse_band(item["range"])
+    return {
+        "quarter": item["quarter"],
+        "low": parsed[0] if parsed else None,
+        "high": parsed[1] if parsed else None,
+        "outlook": item["outlook"],
+        "note": item["note"],
+    }
 
 
 # ─── Thesis audit ────────────────────────────────────────────────────────────
@@ -870,8 +969,9 @@ def _render_forces():
     st.markdown("**Net Assessment**")
     st.markdown("")
 
-    down_total = sum(f["magnitude"] for f in FORCE_DATA if f["direction"] == "down")
-    up_total = sum(f["magnitude"] for f in FORCE_DATA if f["direction"] == "up")
+    net = force_net()
+    down_total = net["down_total"]
+    up_total = net["up_total"]
 
     na1, na2 = st.columns(2)
     na1.metric("Downward Pressure", str(down_total),
@@ -940,6 +1040,135 @@ def _render_buying_window():
         "and year-end sentiment is weakest, while EEAI is still intact. That's your "
         "convergence point — maximum supply, softened demand, and full incentive stack."
     )
+
+
+# ─── Bid Outlook (qualitative + quantitative synthesis) ───────────────────────
+
+def _render_scenario_card(scenario: dict) -> None:
+    """One scenario column: range, delta vs current, band + lean, driver list."""
+    lk = scenario["likelihood"]
+    st.markdown(f"**{scenario['name']}**")
+    st.markdown(
+        f"\\${scenario['premium_low']:,.0f} – \\${scenario['premium_high']:,.0f}"
+    )
+    st.caption(
+        f"vs current: {scenario['delta_low']:+,} to {scenario['delta_high']:+,}"
+    )
+    st.markdown(
+        f'<span style="background:{lk["color"]}; color:white; padding:2px 10px; '
+        f'border-radius:12px; font-size:0.8rem">{lk["band"]}</span> '
+        f'<span style="opacity:0.6; font-size:0.85rem">· lean {lk["lean_score"]}</span>',
+        unsafe_allow_html=True,
+    )
+    with st.expander("Why", expanded=False):
+        if not scenario["drivers"]:
+            st.caption("No directional signal — default base expectation.")
+        for d in scenario["drivers"]:
+            arrow = ("&#x25B2;" if d["direction"] == "up"
+                     else "&#x25BC;" if d["direction"] == "down" else "&#x25C6;")
+            st.caption(f"{arrow} **{d['source']}** ({d['weight']:+d}) — {d['detail']}")
+
+
+def _render_bid_outlook() -> None:
+    """Synthesis tab: fuse every signal into possible outcomes per category."""
+    from models.coe_outcomes import (
+        project_all, TILT_RULES, LEAN_BANDS, STEP_PCT,
+    )
+
+    st.caption(
+        "One deterministic view that fuses the technical reversal signals, price "
+        "momentum, the structural force balance, the policy radar, and the curated "
+        "quarterly bands into possible outcomes — for the next bidding exercise and "
+        "the next quarter, per category."
+    )
+
+    with st.expander("How these outcomes are derived (methodology)", expanded=False):
+        st.markdown(
+            "**Tilt score** — a signed directional lean. Each signal adds a documented "
+            "amount; negative = premiums expected to ease, positive = premiums expected "
+            "to firm:"
+        )
+        st.dataframe(
+            [{"Signal": s, "Contribution to tilt": rule} for s, rule in TILT_RULES],
+            use_container_width=True, hide_index=True,
+        )
+        st.markdown(
+            f"**Scenario ranges** anchor on the current premium; one scenario step is "
+            f"{STEP_PCT:.0%} of it (the typical round-to-round swing). Immediate-round "
+            f"ranges are clamped to the curated quarterly band so the engine never "
+            f"contradicts the published outlook; next-quarter ranges are built around "
+            f"that quarter's curated band."
+        )
+        st.markdown(
+            "**Likelihood** is an ordinal *lean score*, not a probability. The base case "
+            "starts highest (markets mean-revert most rounds); the tilt then shifts "
+            "weight toward the aligned scenario. Bands:"
+        )
+        for threshold, label, _ in LEAN_BANDS:
+            st.markdown(f"- **{label}** (lean ≥ {threshold})")
+        st.caption(
+            "Lean scores are ordinal weights from the rule above, shown next to the "
+            "band — they are deliberately NOT calibrated probabilities."
+        )
+
+    outlook = project_all()
+
+    for category, result in outlook.items():
+        st.markdown("---")
+        st.markdown(f"### {category}")
+
+        if result["data_quality"] == "insufficient":
+            st.info(result["notes"][0] if result["notes"] else "No data available.")
+            continue
+
+        if result["data_quality"] == "fallback_snapshot":
+            st.caption(
+                "Based on the bundled snapshot — click **Refresh Data** at the top "
+                "of the dashboard for live figures."
+            )
+
+        tilt = result["tilt"]
+        st.markdown(
+            f'As of **{result["as_of_period"]}** · current '
+            f'**\\${result["premium_current"]:,.0f}** &nbsp; '
+            f'<span style="background:{tilt["color"]}; color:white; padding:2px 10px; '
+            f'border-radius:12px; font-size:0.85rem">Tilt {tilt["score"]:+d} · '
+            f'{tilt["label"]}</span>',
+            unsafe_allow_html=True,
+        )
+
+        st.markdown("")
+        st.markdown("**Next bidding exercise**")
+        for col, scenario in zip(st.columns(3), result["next_exercise"]["scenarios"]):
+            with col:
+                _render_scenario_card(scenario)
+        mp = result["next_exercise"]["most_probable"]
+        if mp:
+            st.success(mp["call"])
+
+        nq = result["next_quarter"]
+        if nq:
+            st.markdown("")
+            band = nq["band"]
+            if band:
+                st.markdown(
+                    f"**Next quarter — {band['quarter']}** "
+                    f"(curated band \\${band['low']:,.0f}–\\${band['high']:,.0f}, "
+                    f"*{band['outlook']}*)"
+                )
+            else:
+                st.markdown("**Next quarter** (signal-derived)")
+            for col, scenario in zip(st.columns(3), nq["scenarios"]):
+                with col:
+                    _render_scenario_card(scenario)
+            mpq = nq["most_probable"]
+            if mpq:
+                st.info(mpq["call"])
+
+        if result["notes"]:
+            with st.expander("Notes & caveats", expanded=False):
+                for n in result["notes"]:
+                    st.caption(f"· {n}")
 
 
 # ─── Glossary ────────────────────────────────────────────────────────────────
@@ -1089,6 +1318,7 @@ def render():
 
     tabs = st.tabs([
         "The Big Picture",
+        "Bid Outlook",
         "Price Trajectory",
         "10-Year Cycle",
         "Market Forces",
@@ -1099,13 +1329,15 @@ def render():
     with tabs[0]:
         _render_overview()
     with tabs[1]:
-        _render_trajectory()
+        _render_bid_outlook()
     with tabs[2]:
-        _render_cycle()
+        _render_trajectory()
     with tabs[3]:
-        _render_forces()
+        _render_cycle()
     with tabs[4]:
-        _render_buying_window()
+        _render_forces()
     with tabs[5]:
+        _render_buying_window()
+    with tabs[6]:
         from analysis.policy_radar import render as render_radar
         render_radar()
