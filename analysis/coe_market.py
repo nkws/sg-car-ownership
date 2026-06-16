@@ -1318,7 +1318,6 @@ def render():
 
     tabs = st.tabs([
         "The Big Picture",
-        "Bid Outlook",
         "Price Trajectory",
         "10-Year Cycle",
         "Market Forces",
@@ -1329,15 +1328,24 @@ def render():
     with tabs[0]:
         _render_overview()
     with tabs[1]:
-        _render_bid_outlook()
-    with tabs[2]:
         _render_trajectory()
-    with tabs[3]:
+    with tabs[2]:
         _render_cycle()
-    with tabs[4]:
+    with tabs[3]:
         _render_forces()
-    with tabs[5]:
+    with tabs[4]:
         _render_buying_window()
-    with tabs[6]:
+    with tabs[5]:
         from analysis.policy_radar import render as render_radar
         render_radar()
+
+
+def render_outlook():
+    """Render the standalone, top-level COE Bid Outlook tab.
+
+    The synthesis view used to live as a sub-tab under COE Market Analysis;
+    it is now surfaced as its own top-level tab for discoverability.
+    """
+    st.markdown('<div class="section-header">COE Bid Outlook</div>',
+                unsafe_allow_html=True)
+    _render_bid_outlook()

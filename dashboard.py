@@ -466,8 +466,9 @@ if signal:
 # single very long scroll. The header above (verdict, FSI cards, alerts,
 # monthly car costs) stays visible as a permanent at-a-glance summary.
 
-tab_coe, tab_afford, tab_calc, tab_stress, tab_method = st.tabs([
+tab_coe, tab_outlook, tab_afford, tab_calc, tab_stress, tab_method = st.tabs([
     "COE Market",
+    "Outlook",
     "Affordability",
     "Calculator",
     "Stress & Risk",
@@ -1566,6 +1567,12 @@ with tab_coe:
 
     from analysis.coe_market import render as render_coe_analysis
     render_coe_analysis()
+
+# ─── Outlook (forward-looking COE bid synthesis) ─────────────────────────────
+with tab_outlook:
+
+    from analysis.coe_market import render_outlook
+    render_outlook()
 
 # ─── Footer ──────────────────────────────────────────────────────────────────
 
