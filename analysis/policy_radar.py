@@ -80,6 +80,47 @@ def _signal_label(score):
     return "Speculative", "#e15759"
 
 
+def policy_net() -> dict:
+    """Net policy direction across all tracked policies, weighted by signal.
+
+    Counts policies by their COE direction (up/down/uncertain) and, separately,
+    counts only those whose evidence clears the "Strong" threshold (>= 40 pts).
+    The net direction is decided on the strong-signal tally so that speculative
+    chatter can't swing it. Pure — no Streamlit, safe to import anywhere.
+    """
+    up = down = uncertain = 0
+    strong_up = strong_down = 0
+    for p in POLICIES:
+        score = sum(e["weight"] for e in p["evidence"])
+        direction = p["direction"]
+        if direction == "up":
+            up += 1
+            if score >= 40:
+                strong_up += 1
+        elif direction == "down":
+            down += 1
+            if score >= 40:
+                strong_down += 1
+        else:
+            uncertain += 1
+
+    if strong_up > strong_down:
+        net_direction = "up"
+    elif strong_down > strong_up:
+        net_direction = "down"
+    else:
+        net_direction = "balanced"
+
+    return {
+        "up": up,
+        "down": down,
+        "uncertain": uncertain,
+        "strong_up": strong_up,
+        "strong_down": strong_down,
+        "net_direction": net_direction,
+    }
+
+
 # ─── Policy Data ─────────────────────────────────────────────────────────────
 
 POLICIES = [
@@ -317,13 +358,11 @@ def render():
     st.markdown("")
 
     # Net direction
-    up_forces = [p for p in POLICIES if p["direction"] == "up"]
-    down_forces = [p for p in POLICIES if p["direction"] == "down"]
-    uncertain_forces = [p for p in POLICIES if p["direction"] == "uncertain"]
+    net = policy_net()
 
     st.markdown(
-        f"**Net policy direction:** {len(up_forces)} upward, "
-        f"{len(down_forces)} downward, {len(uncertain_forces)} uncertain. "
+        f"**Net policy direction:** {net['up']} upward, "
+        f"{net['down']} downward, {net['uncertain']} uncertain. "
         f"The policy environment is currently **net bullish** for COE prices — "
         f"most confirmed changes (PARF cut, EEAI sunset, COE recat uncertainty) "
         f"push premiums up, while downward forces (supply smoothing, ERP 2.0) "
