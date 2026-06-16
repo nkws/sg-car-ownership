@@ -1,27 +1,33 @@
 """Decision rule for the Verdict panel.
 
-Pure function that combines:
-  - COE market state from coe_reversal.detect_reversal
-  - User's stressed cost-to-income ratio (computed by the caller)
-  - Composite FSI score
-  - User-overridable thresholds
+Combines the forward-looking Decision Hurdle Index (models/decision_index.py)
+with two hard safety vetoes:
 
-…and returns a single Verdict — headline + recommendation + chip details.
+  - personal affordability: a stress-tested ratio at/above ``threshold_wait``
+    forces Wait regardless of how attractive timing looks;
+  - market stress: a POSSIBLE+ COE reversal forces Wait.
 
-Heuristic only. The caller is responsible for showing a "not financial
-advice" caveat in the UI.
+The DHI band sets the baseline recommendation; the vetoes can only make it more
+conservative, never less. This is the piece that was previously missing — the
+old rule ignored the composite score entirely and branched on the ratio alone.
+
+Heuristic only. The caller shows a "not financial advice" caveat in the UI.
 """
 
 from __future__ import annotations
 
 from typing import Literal, TypedDict
 
+from models.decision_index import DecisionScore
+
 
 Recommendation = Literal["Wait", "Caution", "Proceed with caution"]
 
-# COE reversal states from models/coe_reversal.py, ordered worst → best.
-# Anything at POSSIBLE or beyond is treated as "market stress", which
-# alone is enough to flip the verdict to Wait regardless of personal ratio.
+# Severity ordering — used to take the most conservative of band + vetoes.
+_SEVERITY = {"Proceed with caution": 0, "Caution": 1, "Wait": 2}
+_BY_SEVERITY = {v: k for k, v in _SEVERITY.items()}
+
+# COE reversal states (models/coe_reversal.py) that count as market stress.
 _MARKET_STRESS_STATES = {"POSSIBLE", "LIKELY", "CONFIRMED"}
 _MARKET_STABLE_STATES = {"STABLE"}
 
@@ -30,12 +36,19 @@ class Verdict(TypedDict):
     recommendation: Recommendation
     headline: str
 
-    # Three explainer chips
-    market_state: str          # e.g. "WATCH"
-    market_reason: str         # one-line summary from coe_reversal
-    stress_ratio: float        # 0.0–∞, e.g. 0.38 = 38% of income
-    fsi_score: float           # 0–100
-    fsi_arrow: str             # "↑", "↓", "→" — direction vs previous
+    # Decision Hurdle Index
+    dhi: float                 # 0-100 composite
+    dhi_band: str              # the DHI's own band before vetoes
+    binding_hurdle: str        # label of the largest hurdle
+    hurdles: list              # full sub-hurdle breakdown for display
+    urgency: dict              # the urgency offset
+
+    # Explainer chips
+    market_state: str
+    market_reason: str
+    stress_ratio: float
+    fsi_score: float
+    fsi_arrow: str             # "↑" / "↓" / "→" vs previous reading
 
 
 def _direction(current: float, previous: float | None, eps: float = 0.5) -> str:
@@ -51,6 +64,7 @@ def _direction(current: float, previous: float | None, eps: float = 0.5) -> str:
 
 def compute_verdict(
     *,
+    decision: DecisionScore,
     market_state: str,
     market_reason: str,
     stress_ratio: float,
@@ -59,33 +73,43 @@ def compute_verdict(
     threshold_wait: float,
     threshold_proceed: float,
 ) -> Verdict:
-    """Apply the decision rule.
+    """Apply the decision rule: DHI band, made more conservative by vetoes.
 
     Rule:
-      stress_ratio ≥ threshold_wait                  → Wait
-      market_state in {POSSIBLE, LIKELY, CONFIRMED}  → Wait
-      stress_ratio ≤ threshold_proceed AND market STABLE → Proceed with caution
-      otherwise                                       → Caution
+      base = decision["band"]                              (from the DHI)
+      veto Wait if stress_ratio ≥ threshold_wait           (affordability)
+      veto Wait if market_state in {POSSIBLE, LIKELY, …}   (market stress)
+      cap Proceed → Caution unless ratio ≤ threshold_proceed AND market STABLE
+      final = most conservative of the above
     """
+    candidates = [decision["band"]]
+
     if stress_ratio >= threshold_wait or market_state in _MARKET_STRESS_STATES:
-        recommendation: Recommendation = "Wait"
-    elif (
-        stress_ratio <= threshold_proceed
-        and market_state in _MARKET_STABLE_STATES
-    ):
-        recommendation = "Proceed with caution"
-    else:
-        recommendation = "Caution"
+        candidates.append("Wait")
+
+    # "Proceed" is only allowed when both personal and market conditions are calm.
+    proceed_ok = (
+        stress_ratio <= threshold_proceed and market_state in _MARKET_STABLE_STATES
+    )
+    if decision["band"] == "Proceed with caution" and not proceed_ok:
+        candidates.append("Caution")
+
+    recommendation: Recommendation = _BY_SEVERITY[max(_SEVERITY[c] for c in candidates)]
 
     headline = (
-        f"Market: {market_state} · "
-        f"Your stress-tested ratio: {stress_ratio:.0%} · "
+        f"Decision Hurdle Index: {decision['dhi']:.0f}/100 "
+        f"(binding: {decision['binding']}) · "
         f"Recommendation: {recommendation}"
     )
 
     return Verdict(
         recommendation=recommendation,
         headline=headline,
+        dhi=decision["dhi"],
+        dhi_band=decision["band"],
+        binding_hurdle=decision["binding"],
+        hurdles=decision["hurdles"],
+        urgency=decision["urgency"],
         market_state=market_state,
         market_reason=market_reason,
         stress_ratio=stress_ratio,

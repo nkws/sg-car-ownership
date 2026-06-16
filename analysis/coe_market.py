@@ -375,6 +375,16 @@ def _load_coe_freshness() -> str | None:
 # know the structural narrative is a snapshot, not a live document.
 THESIS_DATE = datetime(2026, 3, 1)
 
+# A quarter after authoring, the structural narrative is considered overdue for
+# review. The Decision Hurdle Index reads this to raise the policy hurdle.
+THESIS_STALE_AFTER_DAYS = 92
+
+
+def is_thesis_stale(today: datetime | None = None) -> bool:
+    """True once the prose is more than one quarter old."""
+    today = today or datetime.now()
+    return (today - THESIS_DATE).days > THESIS_STALE_AFTER_DAYS
+
 # Each anchor encodes one numeric/temporal claim from the prose. The audit
 # function checks each against current data and tags it OK / WATCH / STALE so
 # we know when to revisit the narrative.
@@ -1029,7 +1039,9 @@ def _render_thesis_health(stats: dict) -> None:
         f"{'  ·  ⚪ ' + str(counts['UNKNOWN']) if counts['UNKNOWN'] else ''}"
     )
 
-    expand = counts["STALE"] > 0 or counts["WATCH"] > 0
+    stale = is_thesis_stale()
+    expand = counts["STALE"] > 0 or counts["WATCH"] > 0 or stale
+    age_days = (datetime.now() - THESIS_DATE).days
     label = (
         f"Thesis health  ·  {summary}  ·  authored {THESIS_DATE:%b %Y}"
     )
@@ -1038,6 +1050,13 @@ def _render_thesis_health(stats: dict) -> None:
             "Each row checks one numeric or temporal claim from the prose against "
             "current data. 🔴 means the claim's anchor no longer holds — the "
             "narrative section needs a rewrite. 🟡 means it's drifting."
+        )
+        _age_dot = "🔴" if stale else "🟢"
+        st.markdown(
+            f"{_age_dot} **Thesis last reviewed {THESIS_DATE:%b %Y}** "
+            f"<span style='opacity:0.6; font-size:0.85rem'>· {age_days} days ago · "
+            f"{'overdue for review' if stale else 'within review window'}</span>",
+            unsafe_allow_html=True,
         )
         for anchor, status, explanation in audit:
             dot, status_label = _STATUS_DOTS.get(status, _STATUS_DOTS["UNKNOWN"])

@@ -6,7 +6,21 @@ then maps against income bands to determine affordability segments.
 
 import pandas as pd
 from database import get_conn, log_refresh
-from config import CAR_COSTS, SEGMENT_THRESHOLDS
+from config import CAR_COSTS, SEGMENT_THRESHOLDS, EV_CATEGORIES, EV_INCENTIVES
+
+
+def ev_rebate(category, eeai_active=True):
+    """Total upfront EV rebate (EEAI + VES) for an EV category, else 0.
+
+    EEAI steps down to $0 from its sunset date — callers pass eeai_active=False
+    to model the post-sunset world. VES Band A1 rebate continues regardless.
+    """
+    if category not in EV_CATEGORIES:
+        return 0
+    rebate = EV_INCENTIVES["ves_rebate"]
+    if eeai_active:
+        rebate += EV_INCENTIVES["eeai_current"]
+    return rebate
 
 
 def flat_to_eir(flat_rate, tenure_years):
@@ -23,7 +37,8 @@ def flat_to_eir(flat_rate, tenure_years):
     return (2 * n * flat_rate) / (n + 1)
 
 
-def calculate_monthly_car_cost(category="cat_a", coe_override=None, flat_rate_override=None):
+def calculate_monthly_car_cost(category="cat_a", coe_override=None, flat_rate_override=None,
+                               eeai_active=True):
     """Calculate total monthly cost of car ownership for a given COE category.
 
     Components:
@@ -46,7 +61,9 @@ def calculate_monthly_car_cost(category="cat_a", coe_override=None, flat_rate_ov
     flat_rate = flat_rate_override if flat_rate_override is not None else params["loan_flat_rate"]
 
     # Total vehicle cost = base price + COE + ARF (approx 100% of OMV for simplicity)
-    total_vehicle_cost = params["vehicle_base_price"] + params["coe_premium_avg"]
+    # EV rebates (EEAI + VES) reduce the cash price before financing.
+    rebate = ev_rebate(category, eeai_active=eeai_active)
+    total_vehicle_cost = params["vehicle_base_price"] + params["coe_premium_avg"] - rebate
 
     # Loan: 60% financed (40% downpayment typical in SG)
     loan_amount = total_vehicle_cost * 0.60
@@ -90,6 +107,7 @@ def calculate_monthly_car_cost(category="cat_a", coe_override=None, flat_rate_ov
         "loan_amount": round(loan_amount, 2),
         "flat_rate": round(flat_rate, 4),
         "eir": round(eir, 4),
+        "ev_rebate": rebate,
     }
 
 
@@ -197,12 +215,13 @@ def stress_test(coe_multiplier=1.0, flat_rate_add=0.0):
     Returns segment shifts for each dwelling type.
     """
     results = []
-    for category in ["cat_a", "cat_b"]:
+    for category in CAR_COSTS:
         params = CAR_COSTS[category].copy()
         stressed_coe = params["coe_premium_avg"] * coe_multiplier
         stressed_flat_rate = params["loan_flat_rate"] + (flat_rate_add / 100)
 
-        total_vehicle_cost = params["vehicle_base_price"] + stressed_coe
+        rebate = ev_rebate(category)
+        total_vehicle_cost = params["vehicle_base_price"] + stressed_coe - rebate
         loan_amount = total_vehicle_cost * 0.60
         tenure = params["loan_tenure_months"]
         tenure_years = tenure / 12

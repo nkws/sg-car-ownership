@@ -56,6 +56,75 @@ CAR_COSTS = {
         "maintenance_monthly": 200,
         "vehicle_base_price": 120000,
     },
+    # EV variants — same COE categories (an EV bids in Cat A or Cat B by power
+    # output), but cheaper "fuel" (electricity) and a different road-tax basis.
+    # Upfront cost is offset by EEAI/VES rebates (see EV_INCENTIVES) which the
+    # ratio model applies to the financed base.
+    "cat_a_ev": {  # EVs qualifying for Cat A (≤110kW)
+        "coe_premium_avg": 95000,
+        "loan_tenure_months": 84,
+        "loan_flat_rate": 0.028,
+        "insurance_annual": 2000,
+        "road_tax_annual": 1100,       # EV road tax incl. additional flat component
+        "petrol_monthly": 90,          # home/public charging equivalent
+        "parking_monthly": 110,
+        "maintenance_monthly": 90,     # EVs cheaper to maintain
+        "vehicle_base_price": 90000,
+    },
+    "cat_b_ev": {  # EVs qualifying for Cat B (>110kW)
+        "coe_premium_avg": 130000,
+        "loan_tenure_months": 84,
+        "loan_flat_rate": 0.028,
+        "insurance_annual": 3000,
+        "road_tax_annual": 2300,
+        "petrol_monthly": 130,
+        "parking_monthly": 110,
+        "maintenance_monthly": 120,
+        "vehicle_base_price": 130000,
+    },
+}
+
+# Which categories are electric — used by the ratio model and DHI.
+EV_CATEGORIES = {"cat_a_ev", "cat_b_ev"}
+
+# EV purchase incentives and their sunset dates. The EEAI rebate steps down to
+# $0 from Jan 2027; VES Band A1 rebate continues. Amounts in SGD. These drive
+# the "EEAI cliff" calculator and the Decision Hurdle Index urgency offset.
+EV_INCENTIVES = {
+    "eeai_current": 15000,            # Electric Vehicle Early Adoption Incentive (45% of ARF, capped)
+    "eeai_sunset": "2027-01-01",      # EEAI drops to $0 from this date
+    "ves_rebate": 15000,              # Vehicle Emissions Scheme Band A1 rebate (continues)
+}
+
+# Known forward-looking policy dates that raise decision uncertainty or create
+# act-now urgency. Consumed by models/decision_index.py.
+POLICY_CLIFFS = {
+    "eeai_sunset":        "2027-01-01",  # EV rebate to $0
+    "vgr_review":         "2028-02-01",  # 0% vehicle growth rate review
+    "buying_window_open": "2026-07-01",  # thesis primary window opens
+    "buying_window_close":"2026-11-30",  # thesis primary window closes
+}
+
+# Cat A premium below which the thesis says to bid (the "$95K trigger").
+COE_BUY_TRIGGER_CAT_A = 95000
+
+# ── Decision Hurdle Index (DHI) ──────────────────────────────────────────────
+# Forward-looking composite (0-100, higher = harder to confidently buy NOW),
+# layered on top of the financial-only FSI. Weights sum the four hurdles; the
+# urgency factor is subtracted (opportunity cost of waiting). See
+# models/decision_index.py for the component definitions.
+DHI_WEIGHTS = {
+    "affordability": 0.35,   # can the household sustain it
+    "timing":        0.30,   # is now a bad time to buy (prices elevated, reversal likely)
+    "commitment":    0.20,   # liquidity + 10-year lock-in
+    "policy":        0.15,   # policy-cliff uncertainty
+    "urgency":       0.30,   # SUBTRACTED — cost of waiting (EEAI cliff, window proximity)
+}
+
+# DHI score → recommendation band cutoffs (mirrors the verdict thresholds).
+DHI_BANDS = {
+    "proceed_below": 40,     # DHI ≤ 40 → Proceed with caution
+    "wait_above":    65,     # DHI ≥ 65 → Wait; between → Caution
 }
 
 # Town-level mapping for geographic analysis

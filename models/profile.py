@@ -45,7 +45,15 @@ DEFAULT_THRESHOLD_WAIT = 0.50      # ≥ this → "Wait"
 DEFAULT_THRESHOLD_PROCEED = 0.35   # ≤ this AND market stable → "Proceed with caution"
 
 
-VehicleCategory = Literal["cat_a", "cat_b"]
+VehicleCategory = Literal["cat_a", "cat_b", "cat_a_ev", "cat_b_ev"]
+
+# Display labels for the vehicle-category selectbox, shared across pages.
+VEHICLE_CATEGORY_LABELS: dict[str, str] = {
+    "cat_a": "Cat A — petrol (≤1600cc)",
+    "cat_b": "Cat B — petrol (>1600cc)",
+    "cat_a_ev": "Cat A — EV (≤110kW)",
+    "cat_b_ev": "Cat B — EV (>110kW)",
+}
 
 
 class Profile(TypedDict):

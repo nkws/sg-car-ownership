@@ -31,15 +31,33 @@ TOWN_INCOME_ESTIMATES = {
 
 def build_town_profiles():
     """Build financial profiles for each HDB town."""
-    # Get carpark data by town
-    with get_conn() as conn:
-        carpark_rows = conn.execute("""
-            SELECT town, COUNT(*) as num_carparks, SUM(total_lots) as total_lots,
-                   AVG(utilisation) as avg_utilisation
-            FROM hdb_carpark
-            WHERE town != 'Unknown'
-            GROUP BY town
-        """).fetchall()
+    # Get carpark data by town. The hdb_carpark table only gains its
+    # `utilisation`/`total_lots` columns once the collector has populated it
+    # (it uses to_sql replace). On a fresh DB — or when the collector could not
+    # fetch live data — those columns are absent, so query defensively and fall
+    # back to an empty result rather than crashing the whole pipeline.
+    try:
+        with get_conn() as conn:
+            carpark_rows = conn.execute("""
+                SELECT town, COUNT(*) as num_carparks, SUM(total_lots) as total_lots,
+                       AVG(utilisation) as avg_utilisation
+                FROM hdb_carpark
+                WHERE town != 'Unknown'
+                GROUP BY town
+            """).fetchall()
+    except Exception as e:
+        print(f"Town profile: carpark data unavailable ({e}); skipping town build")
+        carpark_rows = []
+
+    if not carpark_rows:
+        df = pd.DataFrame(columns=[
+            "town", "region", "total_carpark_lots", "estimated_car_households",
+            "median_income", "car_cost_ratio", "stress_segment", "fsi_score",
+        ])
+        with get_conn() as conn:
+            df.to_sql("town_profile", conn, if_exists="replace", index=False)
+        log_refresh("town_profiles", 0, status="no_data")
+        return df
 
     # Get latest car cost
     try:

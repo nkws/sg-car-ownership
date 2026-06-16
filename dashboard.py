@@ -18,76 +18,22 @@ st.set_page_config(
     layout="wide",
 )
 
-# ─── Custom Styling ──────────────────────────────────────────────────────────
+# ─── Shared styling, data loaders, sidebar profile ──────────────────────────
+# These used to be defined inline here; they now live in app_pages/* so the
+# Home and COE Outlook pages share the exact same widgets, caching, and SQL.
 
-st.markdown("""
-<style>
-    /* Tighten top padding */
-    .block-container {
-        padding-top: 2rem;
-        padding-left: 3rem;
-        padding-right: 3rem;
-    }
-    /* Section spacing — uses Streamlit theme variables that auto-switch */
-    .section-header {
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin-top: 1.5rem;
-        margin-bottom: 0.75rem;
-        padding-bottom: 0.4rem;
-        border-bottom: 2px solid var(--secondary-background-color);
-        color: var(--text-color);
-    }
-    /* Metric cards — Streamlit variables adapt to light/dark automatically */
-    [data-testid="stMetric"] {
-        background: var(--secondary-background-color);
-        border: 1px solid var(--secondary-background-color);
-        border-radius: 8px;
-        padding: 1rem;
-    }
-    [data-testid="stMetricLabel"] {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: var(--text-color) !important;
-    }
-    [data-testid="stMetricValue"] {
-        color: var(--text-color) !important;
-    }
-    /* Color-coded metric cards — rgba tints work on any background */
-    .metric-green [data-testid="stMetric"] {
-        border-left: 4px solid #4caf50;
-        background: rgba(76, 175, 80, 0.15);
-    }
-    .metric-yellow [data-testid="stMetric"] {
-        border-left: 4px solid #ffca28;
-        background: rgba(255, 202, 40, 0.15);
-    }
-    .metric-red [data-testid="stMetric"] {
-        border-left: 4px solid #ef5350;
-        background: rgba(239, 83, 80, 0.15);
-    }
-    /* Alert styling */
-    .stAlert {
-        margin-bottom: 0.5rem;
-    }
-    /* Consistent chart margins */
-    .stPlotlyChart {
-        margin-bottom: 0.5rem;
-    }
-    /* Term definitions */
-    .term-def {
-        font-size: 0.82rem;
-        color: var(--text-color);
-        margin-bottom: 0.3rem;
-    }
-    .term-label {
-        font-weight: 600;
-        color: var(--text-color);
-    }
-</style>
-""", unsafe_allow_html=True)
+from app_pages.styles import inject_css
+from app_pages.data_access import (
+    load_signal,
+    load_coe_history,
+    load_town_profiles,
+    load_income_segments,
+    load_hp_data,
+    load_refresh_log,
+)
+from app_pages.profile_state import seed_profile_state, render_sidebar, current_profile
+from app_pages.verdict_panel import render_verdict
 
-# ─── Load Data ───────────────────────────────────────────────────────────────
 
 def run_pipeline_refresh():
     """Run the full data pipeline and clear caches."""
@@ -95,200 +41,11 @@ def run_pipeline_refresh():
     run_pipeline()
     st.cache_data.clear()
 
-@st.cache_data(ttl=3600)
-def load_signal():
-    if SIGNAL_FILE.exists():
-        with open(SIGNAL_FILE) as f:
-            return json.load(f)
-    return None
 
-@st.cache_data(ttl=3600)
-def load_coe_history():
-    init_db()
-    with get_conn() as conn:
-        rows = conn.execute("""
-            SELECT month, vehicle_class, AVG(premium) as avg_premium
-            FROM coe_results
-            GROUP BY month, vehicle_class
-            ORDER BY month
-        """).fetchall()
-    return pd.DataFrame([dict(r) for r in rows])
-
-@st.cache_data(ttl=3600)
-def load_town_profiles():
-    init_db()
-    with get_conn() as conn:
-        rows = conn.execute("SELECT * FROM town_profile ORDER BY fsi_score DESC").fetchall()
-    return pd.DataFrame([dict(r) for r in rows])
-
-@st.cache_data(ttl=3600)
-def load_income_segments():
-    init_db()
-    with get_conn() as conn:
-        rows = conn.execute("""
-            SELECT dwelling_type, median_income, income_bracket, percentage
-            FROM household_income
-            ORDER BY median_income
-        """).fetchall()
-    return pd.DataFrame([dict(r) for r in rows])
-
-@st.cache_data(ttl=3600)
-def load_hp_data():
-    init_db()
-    with get_conn() as conn:
-        try:
-            rows = conn.execute("SELECT * FROM mas_hire_purchase ORDER BY year, quarter").fetchall()
-            return pd.DataFrame([dict(r) for r in rows])
-        except Exception:
-            return pd.DataFrame()
-
-# ─── Sidebar Profile ─────────────────────────────────────────────────────────
-# Drives Calculator, Stress Test, Affordability Cliff, Town-Level Stress,
-# and the Verdict panel. Stored in st.session_state.profile.
-
-from models.profile import (
-    DWELLING_TYPES,
-    INCOME_PERCENTILES,
-    INCOME_PERCENTILES_REFERENCE,
-    DEFAULT_THRESHOLD_WAIT,
-    DEFAULT_THRESHOLD_PROCEED,
-    Profile,
-    default_profile,
-)
-
-# Seed session state once on first load.
-_PROFILE_KEYS = {
-    "profile_income": INCOME_PERCENTILES[50],
-    "profile_dwelling": "HDB 4 Room",
-    "profile_town": "",
-    "profile_vehicle_cat": "cat_a",
-    "profile_vehicle_price": 80_000,
-    "profile_tenure": 7,
-    "profile_stress_coe_mult": 1.0,
-    "profile_stress_rate_add": 0.0,
-    "profile_threshold_wait": DEFAULT_THRESHOLD_WAIT,
-    "profile_threshold_proceed": DEFAULT_THRESHOLD_PROCEED,
-}
-for _k, _v in _PROFILE_KEYS.items():
-    if _k not in st.session_state:
-        st.session_state[_k] = _v
-
-
-def _set_income(val: int) -> None:
-    st.session_state["profile_income"] = val
-
-
-with st.sidebar:
-    st.markdown("### Your Profile")
-    st.caption("Drives the Verdict panel and the affordability sections below.")
-
-    st.markdown("**Monthly household income**")
-    _btn_cols = st.columns(4)
-    for _i, (_pct, _val) in enumerate(INCOME_PERCENTILES.items()):
-        _btn_cols[_i].button(
-            f"P{_pct}",
-            key=f"income_preset_p{_pct}",
-            help=f"${_val:,}",
-            on_click=_set_income,
-            args=(_val,),
-            use_container_width=True,
-        )
-    st.number_input(
-        "$/month",
-        min_value=1_000, max_value=200_000, step=500, format="%d",
-        key="profile_income",
-        label_visibility="collapsed",
-    )
-    st.caption(f"Presets: {INCOME_PERCENTILES_REFERENCE}")
-
-    st.selectbox(
-        "Dwelling type",
-        options=DWELLING_TYPES,
-        key="profile_dwelling",
-    )
-
-    # Town selectbox is populated at render time from town_profile table.
-    _town_df_for_sidebar = load_town_profiles()
-    _town_options = [""] + (
-        sorted(_town_df_for_sidebar["town"].dropna().unique().tolist())
-        if not _town_df_for_sidebar.empty else []
-    )
-    if st.session_state["profile_town"] not in _town_options:
-        st.session_state["profile_town"] = ""
-    st.selectbox(
-        "Town (optional)",
-        options=_town_options,
-        format_func=lambda x: x if x else "— not set —",
-        key="profile_town",
-    )
-
-    st.divider()
-    st.markdown("### Vehicle Target")
-    st.selectbox(
-        "Category",
-        options=["cat_a", "cat_b"],
-        format_func=lambda x: "Cat A (≤1600cc)" if x == "cat_a" else "Cat B (>1600cc)",
-        key="profile_vehicle_cat",
-    )
-    st.slider(
-        "Vehicle price (OMV + dealer)",
-        min_value=30_000, max_value=300_000, step=5_000, format="$%d",
-        key="profile_vehicle_price",
-    )
-    st.selectbox(
-        "Loan tenure",
-        options=[5, 6, 7],
-        format_func=lambda x: f"{x} years",
-        key="profile_tenure",
-    )
-
-    st.divider()
-    st.markdown("### Stress Scenario")
-    st.caption("Applied to the Verdict and Stress Test sections.")
-    st.slider(
-        "COE multiplier",
-        min_value=0.5, max_value=2.0, step=0.1,
-        key="profile_stress_coe_mult",
-        help="1.0 = current level; 1.5 = +50%",
-    )
-    st.slider(
-        "Flat rate increase (pp)",
-        min_value=0.0, max_value=3.0, step=0.25,
-        key="profile_stress_rate_add",
-        help="Additional percentage points on the flat rate (not EIR)",
-    )
-
-    with st.expander("Advanced thresholds"):
-        st.caption("Override the Verdict decision rule cutoffs.")
-        st.number_input(
-            "Wait at ratio ≥",
-            min_value=0.10, max_value=1.0, step=0.05, format="%.2f",
-            key="profile_threshold_wait",
-        )
-        st.number_input(
-            "Proceed at ratio ≤",
-            min_value=0.05, max_value=1.0, step=0.05, format="%.2f",
-            key="profile_threshold_proceed",
-        )
-
-
-def _current_profile() -> Profile:
-    """Build a typed Profile from the current session state."""
-    return Profile(
-        monthly_income=int(st.session_state["profile_income"]),
-        dwelling_type=st.session_state["profile_dwelling"],
-        town=st.session_state["profile_town"],
-        vehicle_category=st.session_state["profile_vehicle_cat"],
-        vehicle_price=int(st.session_state["profile_vehicle_price"]),
-        loan_tenure_years=int(st.session_state["profile_tenure"]),
-        stress_coe_mult=float(st.session_state["profile_stress_coe_mult"]),
-        stress_rate_add=float(st.session_state["profile_stress_rate_add"]),
-        threshold_wait=float(st.session_state["profile_threshold_wait"]),
-        threshold_proceed=float(st.session_state["profile_threshold_proceed"]),
-    )
-
-
-profile = _current_profile()
+inject_css()
+seed_profile_state()
+render_sidebar()
+profile = current_profile()
 
 # ─── Header ──────────────────────────────────────────────────────────────────
 
@@ -312,74 +69,8 @@ if signal:
 
     st.markdown("")  # spacer
 
-    # ── Verdict Panel ────────────────────────────────────────────────────────
-
-    from models.coe_reversal import detect_reversal
-    from models.ratio_model import stress_test as _stress_test, calculate_monthly_car_cost
-    from models.verdict import compute_verdict
-
-    # Market state: take the worse of Cat A / Cat B reversal states.
-    _state_rank = {"NO DATA": -1, "STABLE": 0, "WATCH": 1, "POSSIBLE": 2, "LIKELY": 3, "CONFIRMED": 4}
-    _rev_a = detect_reversal("Category A")
-    _rev_b = detect_reversal("Category B")
-    _worst = _rev_a if _state_rank.get(_rev_a["state"], -1) >= _state_rank.get(_rev_b["state"], -1) else _rev_b
-    _market_state = _worst["state"]
-    _market_reason = _worst["summary"]
-
-    # Personal stress-tested monthly cost using the sidebar profile.
-    _stress_results = _stress_test(profile["stress_coe_mult"], profile["stress_rate_add"])
-    _profile_stress = next(
-        (r for r in _stress_results if r["category"] == profile["vehicle_category"]),
-        _stress_results[0],
-    )
-    _stressed_monthly = _profile_stress["stressed_monthly_cost"]
-    _stress_ratio = _stressed_monthly / max(profile["monthly_income"], 1)
-
-    # FSI direction vs previous reading (held in session_state).
-    _fsi = signal.get("fsi_score", 0)
-    _previous_fsi = st.session_state.get("_last_fsi_score")
-    verdict = compute_verdict(
-        market_state=_market_state,
-        market_reason=_market_reason,
-        stress_ratio=_stress_ratio,
-        fsi_score=_fsi,
-        previous_fsi=_previous_fsi,
-        threshold_wait=profile["threshold_wait"],
-        threshold_proceed=profile["threshold_proceed"],
-    )
-    st.session_state["_last_fsi_score"] = _fsi
-
-    _rec_color = {"Wait": "red", "Caution": "yellow", "Proceed with caution": "green"}[
-        verdict["recommendation"]
-    ]
-    st.markdown(
-        f"<div class='metric-{_rec_color}' style='padding:1rem 1.2rem;border-radius:8px;"
-        f"background:rgba(127,127,127,0.08);margin-bottom:0.5rem;'>"
-        f"<div style='font-size:1.15rem;font-weight:600;'>{verdict['headline']}</div>"
-        f"</div>",
-        unsafe_allow_html=True,
-    )
-
-    _v1, _v2, _v3 = st.columns(3)
-    _v1.metric(
-        f"Market: {verdict['market_state']}",
-        f"{_worst['score']}/5 signals",
-        delta=verdict["market_reason"].split("—")[-1].strip().rstrip(".") if "—" in verdict["market_reason"] else "No reversal signals",
-        delta_color="off",
-    )
-    _v2.metric(
-        "Your stress-tested ratio",
-        f"{verdict['stress_ratio']:.0%}",
-        delta=f"${_stressed_monthly:,.0f}/mo on ${profile['monthly_income']:,}/mo income",
-        delta_color="off",
-    )
-    _v3.metric(
-        "Composite FSI",
-        f"{verdict['fsi_score']:.0f} / 100  {verdict['fsi_arrow']}",
-        delta="vs previous load" if _previous_fsi is not None else "first read this session",
-        delta_color="off",
-    )
-    st.caption("Heuristic only — not financial advice. Adjust the decision thresholds in the sidebar.")
+    # ── Verdict / Decision Hurdle Index ──────────────────────────────────────
+    render_verdict(profile, signal)
     st.markdown("")  # spacer
 
     # ── FSI Score Cards ──────────────────────────────────────────────────────
@@ -1479,6 +1170,11 @@ with tab_calc:
         else:
             st.info("Car ownership is competitive at typical usage levels.")
 
+# ─── EV / Renew / Cost-of-Waiting ────────────────────────────────────────────
+with tab_calc:
+    from app_pages.sections.calculator import render as render_calc_extras
+    render_calc_extras(profile)
+
 # ─── FSI Weight Backtester ───────────────────────────────────────────────────
 with tab_method:
 
@@ -1561,11 +1257,30 @@ with tab_method:
                 st.caption(f"Tested {backtest['total_months']} months: "
                            f"{backtest['stress_count']} stress, {backtest['calm_count']} calm")
 
-# ─── COE Market Analysis ────────────────────────────────────────────────────
-with tab_coe:
+# ─── Data Freshness ──────────────────────────────────────────────────────────
+with tab_method:
+    st.markdown('<div class="section-header">Data Freshness by Source</div>',
+                unsafe_allow_html=True)
+    st.caption("When each collector last refreshed and how many records it wrote. "
+               "A stale source here explains a stale headline above.")
+    _refresh_df = load_refresh_log()
+    if not _refresh_df.empty:
+        _disp = _refresh_df.copy()
+        _disp["last_updated"] = _disp["last_updated"].str[:16].str.replace("T", " ")
+        _disp.columns = ["Source", "Last updated", "Records", "Status"]
+        st.dataframe(_disp, use_container_width=True, hide_index=True)
+    else:
+        st.info("No refresh log yet — run `python3 run_pipeline.py`.")
 
-    from analysis.coe_market import render as render_coe_analysis
-    render_coe_analysis()
+# ─── COE Market Analysis ────────────────────────────────────────────────────
+# The full structural thesis now lives on its own top-level "COE Outlook" page
+# (app_pages/coe_outlook.py) rather than nested as a tab-within-a-tab here.
+with tab_coe:
+    st.markdown('<div class="section-header">COE Market Outlook</div>', unsafe_allow_html=True)
+    st.info(
+        "The full structural thesis — supply cycle, market forces, buying window, "
+        "and policy radar — is now on the **COE Outlook** page in the top navigation."
+    )
 
 # ─── Footer ──────────────────────────────────────────────────────────────────
 

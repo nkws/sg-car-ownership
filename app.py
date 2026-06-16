@@ -23,6 +23,12 @@ coe_page = st.Page(
     title="COE",
     icon="🚗",
 )
+outlook_page = st.Page(
+    "app_pages/coe_outlook.py",
+    title="COE Outlook",
+    icon="📈",
+    url_path="coe-outlook",
+)
 
-pg = st.navigation([home_page, coe_page])
+pg = st.navigation([home_page, coe_page, outlook_page])
 pg.run()

@@ -221,6 +221,7 @@ def calculate_segment_fsi():
     df = pd.DataFrame(segment_scores)
 
     # Store history
+    today = datetime.now().strftime("%Y-%m-%d")
     with get_conn() as conn:
         for _, row in df.iterrows():
             conn.execute("""
@@ -230,6 +231,16 @@ def calculate_segment_fsi():
             """, (row["date"], f"{row['dwelling_type']}_{row['coe_category']}",
                   row["fsi_score"], row["coe_component"],
                   row["credit_component"], row["affordability_component"]))
+
+        # Also persist the macro composite under a reserved segment so the
+        # dashboard can show a real "vs last refresh" trend arrow rather than
+        # comparing against the previous page load.
+        conn.execute("""
+            INSERT OR REPLACE INTO fsi_history
+            (date, segment, fsi_score, coe_component, credit_component, affordability_component)
+            VALUES (?, '_composite_', ?, ?, ?, ?)
+        """, (today, base_fsi["fsi_score"], base_fsi["coe_component"],
+              base_fsi["credit_component"], base_fsi["market_component"]))
 
     log_refresh("fsi_scores", len(df))
     return base_fsi, df
