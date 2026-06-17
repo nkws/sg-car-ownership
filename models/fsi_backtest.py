@@ -20,21 +20,31 @@ from database import get_conn
 
 
 def _load_backtest_data():
-    """Load historical data needed for backtesting."""
-    with get_conn() as conn:
-        coe_rows = conn.execute("""
-            SELECT month, vehicle_class, AVG(premium) as avg_premium,
-                   SUM(bids_received) as total_bids,
-                   SUM(quota) as total_quota
-            FROM coe_results
-            WHERE vehicle_class IN ('Category A', 'Category B')
-            GROUP BY month, vehicle_class
-            ORDER BY month
-        """).fetchall()
+    """Load historical data needed for backtesting.
 
-        hp_rows = conn.execute("""
-            SELECT * FROM mas_hire_purchase ORDER BY year, quarter
-        """).fetchall()
+    Returns empty DataFrames if the tables don't exist yet (e.g. on a cold
+    start before the pipeline has populated the database). The caller treats
+    empty data as "insufficient" and falls back to default weights, so a
+    not-yet-refreshed database degrades gracefully instead of crashing the
+    dashboard.
+    """
+    try:
+        with get_conn() as conn:
+            coe_rows = conn.execute("""
+                SELECT month, vehicle_class, AVG(premium) as avg_premium,
+                       SUM(bids_received) as total_bids,
+                       SUM(quota) as total_quota
+                FROM coe_results
+                WHERE vehicle_class IN ('Category A', 'Category B')
+                GROUP BY month, vehicle_class
+                ORDER BY month
+            """).fetchall()
+
+            hp_rows = conn.execute("""
+                SELECT * FROM mas_hire_purchase ORDER BY year, quarter
+            """).fetchall()
+    except Exception:
+        return pd.DataFrame(), pd.DataFrame()
 
     coe_df = pd.DataFrame([dict(r) for r in coe_rows])
     hp_df = pd.DataFrame([dict(r) for r in hp_rows])
