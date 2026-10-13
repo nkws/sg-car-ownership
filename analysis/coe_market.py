@@ -161,7 +161,8 @@ STRATEGY_ITEMS = [
     {"label": "Risk of Waiting", "value": "~\\$10K incentive cliff on 1 Jan 2027",
      "detail": "Waiting into 2027 only pays if the COE you'd win falls by more than ~\\$10K "
                "(less if your EV doesn't get the full \\$7,500 EEAI). A possible Cat A/B merger "
-               "with a ±\\$15K OMV feebate is a second, larger unknown — not yet policy."},
+               "with a ±\\$15K OMV feebate is a second, larger unknown — not yet policy, but "
+               "reported examples put the Model Y RWD in the surcharge band under both options."},
 ]
 
 WHY_DIFFERENT = [

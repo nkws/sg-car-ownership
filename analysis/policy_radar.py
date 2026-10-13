@@ -161,9 +161,47 @@ POLICIES = [
              "detail": "Cat A closed above Cat B on 22 Apr and 17 Jun 2026; gap just \\$99 on "
                        "7 Oct (\\$130,001 vs \\$130,100). LTA cites EVs tuned to fit Cat A limits"},
             {"type": "Media/Analyst", "weight": 5,
-             "detail": "Wide coverage (Mothership, Motorist, The Independent). Feebate "
-                       "framed as luxury buyers paying up to \\$15K more"},
+             "detail": "NUS (Timothy Wong) and SUSS (Walter Theseira) academics broadly "
+                       "supportive; Dollars and Sense and a Motorist guest column argue it "
+                       "won't lower prices. Reported examples put the Tesla Model Y RWD in the "
+                       "surcharge band under both options"},
         ],
+        "debate": {
+            "reviewed": "13 Oct 2026",
+            "pros": [
+                ("LTA", "Engine/power no longer separates cars by value — EVs can be tuned "
+                        "under the Cat A limit. Cat A beat Cat B three times Feb-Jun 2026."),
+                ("Walter Theseira, SUSS", "OMV is harder to game than specs: you can't evade "
+                        "the dollar cost of the car. Closes the EV loophole."),
+                ("Timothy Wong, NUS", "Feebate should give mass-market buyers cheaper "
+                        "effective COEs; middle-income households likely benefit."),
+                ("Dollars and Sense", "Overdue: CLA180 variants with the same engine and "
+                        "price sit in different categories over a 5 bhp difference."),
+                ("LTA", "Bands published yearly, so buyers know a model's rebate or "
+                        "surcharge before buying; retailers can appeal a band."),
+            ],
+            "cons": [
+                ("Walter Theseira, SUSS", "Hard to predict whether COE prices fall at all. "
+                        "The only guarantee is that pricier cars pay more."),
+                ("Timothy Wong, NUS", "Small, low-power cars with a high OMV could end up "
+                        "paying more than today."),
+                ("Dollars and Sense", "One pool still treats a PHV earning income all day the "
+                        "same as a family car, and a third car the same as a first car. If the "
+                        "common premium rises by more than the rebate, families pay more."),
+                ("Motorist guest column (Sep, pre-consultation)", "Merging spreads Cat A's EV "
+                        "demand into Cat B. Chinese EV and luxury brands bidding in one pool "
+                        "favour high-margin models; mass-market cars get deprioritised."),
+                ("Open in the consultation", "Three bands means big jumps between similar "
+                        "cars; five is fairer but more complex. Renewal treatment, transition "
+                        "terms and Cat E's fate are undecided."),
+            ],
+            "takeaway": (
+                "Supporters and critics largely agree on one point: this fixes *who pays "
+                "what*, not *how much COEs cost overall*. Nobody quoted expects it to lower "
+                "the headline premium. For an above-median-OMV car like a Tesla Model Y, "
+                "the likely effect is a surcharge of \\$7.5K-\\$15K on top of the merged price."
+            ),
+        },
     },
     {
         "id": "parf_cut",
@@ -488,3 +526,18 @@ def render():
 
         # Impact analysis
         st.caption(f"**Impact:** {p['impact_note']}")
+
+        # Public debate — attributed pros and cons, where tracked
+        debate = p.get("debate")
+        if debate:
+            with st.expander(f"Public debate: pros & cons (reviewed {debate['reviewed']})"):
+                dc1, dc2 = st.columns(2)
+                with dc1:
+                    st.markdown("**For**")
+                    for who, point in debate["pros"]:
+                        st.markdown(f"- **{who}:** {point}")
+                with dc2:
+                    st.markdown("**Against / open questions**")
+                    for who, point in debate["cons"]:
+                        st.markdown(f"- **{who}:** {point}")
+                st.info(debate["takeaway"])
