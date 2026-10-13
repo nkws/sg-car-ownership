@@ -22,7 +22,7 @@ API (needs `github_token` in Streamlit secrets).
 |---|---|---|
 | `id` | string, `YYYYMMDD-slug` | Claude |
 | `status` | `proposed` / `active` / `resolved` / `rejected` | Claude (proposed, resolved), Norman (active, rejected) |
-| `theme` | `AI & tech` / `SG equities` / `COE & cars` / `Macro` | Claude |
+| `theme` | `AI & tech` / `SG equities` / `COE & cars` / `Energy` / `Staples` / `Macro` | Claude |
 | `question` | string, yes/no | Claude, Norman may edit |
 | `resolution` | string — exact rule and source that decides it | Claude |
 | `resolve_by` | `YYYY-MM-DD` | Claude |
