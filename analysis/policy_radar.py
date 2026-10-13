@@ -123,39 +123,46 @@ def policy_net() -> dict:
 
 # ─── Policy Data ─────────────────────────────────────────────────────────────
 
+RADAR_REVIEWED = "13 Oct 2026"
+
+_NET_LABEL = {"up": "net bullish", "down": "net bearish", "balanced": "balanced"}
+
 POLICIES = [
     {
         "id": "coe_recat",
-        "name": "COE Category Redefinition",
-        "status": "Under Review",
+        "name": "COE Cat A/B Merger + OMV Feebate",
+        "status": "Public Consultation",
         "status_color": "#f28e2b",
         "summary": (
-            "LTA reviewing how cars are categorised for COE bidding. Current system splits "
-            "by engine displacement (Cat A <=1600cc, Cat B >1600cc), which is increasingly "
-            "irrelevant with EVs (no engine). Potential shift to power-based, price-based, "
-            "or weight-based categories."
+            "LTA's 8 Oct 2026 consultation proposes merging Cat A and B into one car category "
+            "with a single COE price, then applying a rebate or surcharge by the model's median "
+            "OMV. Three-band option: bottom 35% get -\\$15K, 35-50th pct \\$0, above median "
+            "+\\$15K. Five-band option: -\\$15K / -\\$7.5K / \\$0 / +\\$7.5K / +\\$15K. Cat E may "
+            "be removed or limited to cars. Feedback closes 2 Nov 2026. Not yet policy."
         ),
-        "direction": "up",
-        "impact_range": "\\$5K - \\$20K",
+        "direction": "uncertain",
+        "impact_range": "±\\$7.5K - \\$15K per car",
         "impact_note": (
-            "Short-term upward pressure as uncertainty drives pull-forward demand. "
-            "Long-term impact depends on final design — could redistribute demand "
-            "between categories rather than raise overall levels."
+            "LTA says the merger is not meant to change the overall COE level — it "
+            "redistributes cost by car value. Cheaper cars could net up to \\$15K less, "
+            "above-median OMV cars up to \\$15K more. Short-term, uncertainty may pull purchases "
+            "forward. Renewals (PQP) may be exempt from the feebate; transition terms are open."
         ),
-        "timeline": "Review concludes end-2026, implementation 2027-2028",
+        "timeline": "Consultation to 2 Nov 2026; review ends 2026; findings H1 2027",
         "evidence": [
             {"type": "Parliamentary", "weight": 30,
              "detail": "Acting Transport Minister Jeffrey Siow announced review during "
                        "Budget 2026 debate (4 Mar 2026)"},
             {"type": "Public Consultation", "weight": 20,
-             "detail": "LTA gathering views from motorists, dealers, manufacturers, "
-                       "and academics. Public consultation expected mid-2026"},
+             "detail": "LTA consultation launched 8 Oct 2026 with two concrete feebate designs; "
+                       "closes 2 Nov 2026. Pay-as-you-bid, family-needs allocation, a PHV "
+                       "category and a multi-car surcharge were set aside"},
             {"type": "Market Signal", "weight": 10,
-             "detail": "Cat A-Cat B premium gap narrowed to ~\\$3.7K (Feb 2025), "
-                       "validating the convergence concern driving the review"},
+             "detail": "Cat A closed above Cat B on 22 Apr and 17 Jun 2026; gap just \\$99 on "
+                       "7 Oct (\\$130,001 vs \\$130,100). LTA cites EVs tuned to fit Cat A limits"},
             {"type": "Media/Analyst", "weight": 5,
-             "detail": "Extensive coverage across Straits Times, CNA, Motorist.sg. "
-                       "Industry expects changes by 2027-2028"},
+             "detail": "Wide coverage (Mothership, Motorist, The Independent). Feebate "
+                       "framed as luxury buyers paying up to \\$15K more"},
         ],
     },
     {
@@ -196,7 +203,8 @@ POLICIES = [
         "summary": (
             "The EV Early Adoption Incentive reduces from 45% ARF rebate (capped \\$15K) "
             "in 2025 to 45% (capped \\$7,500) in 2026, then ceases entirely after "
-            "31 Dec 2026. Combined EV savings drop from ~\\$30K in 2026 to ~\\$20K in 2027."
+            "31 Dec 2026. VES Band A EV rebate also steps from \\$22,500 (2026) to \\$20,000 "
+            "(2027). Combined EV savings drop from up to \\$30K to \\$20K — a ~\\$10K cliff."
         ),
         "direction": "up",
         "impact_range": "\\$3K - \\$10K",
@@ -258,9 +266,9 @@ POLICIES = [
         "status_color": "#59a14f",
         "summary": (
             "Satellite-based (GNSS) road pricing replacing physical gantries. "
-            "OBU installation 93% complete as of Jan 2026. Full transition from "
-            "1 Jan 2027. Enables distance-based or time-based charging, "
-            "more granular congestion management."
+            "Over 98% of eligible vehicles fitted with OBUs (Sep 2026). Gantry charging "
+            "stops 31 Dec 2026; ERP 2 launches 1 Jan 2027. Enables distance-based or "
+            "time-based charging, more granular congestion management."
         ),
         "direction": "down",
         "impact_range": "\\$0 - \\$5K (indirect)",
@@ -270,10 +278,12 @@ POLICIES = [
             "increase (more cars manageable with smarter pricing). The 20,000 COE "
             "injection was explicitly tied to ERP 2.0 readiness."
         ),
-        "timeline": "Full rollout 1 Jan 2027. Gantry dismantling through 2026-2027",
+        "timeline": "Launch 1 Jan 2027. Gantry removal Oct 2026 - Jun 2027",
         "evidence": [
             {"type": "LTA/Agency Release", "weight": 25,
-             "detail": "OBU mandatory from 1 Jan 2027. 93% installed as of Jan 2026"},
+             "detail": "Sep 2026: new road markings/signs from Oct 2026; 62 idle gantries "
+                       "removed from Oct, 33 live gantries after 31 Dec. >98% OBUs fitted. "
+                       "Next ERP rate review mid-Nov 2026"},
             {"type": "Gazetted", "weight": 35,
              "detail": "Road Traffic Act amendments passed Feb 2026 to facilitate "
                        "ERP 2.0 transition and enhanced penalties"},
@@ -309,8 +319,9 @@ POLICIES = [
              "detail": "Oct 2024: LTA announced ~20,000 additional COEs from Feb 2025, "
                        "linked to ERP 2.0 and reduced-usage COE scheme"},
             {"type": "Market Signal", "weight": 10,
-             "detail": "Feb-Apr 2026 quota at 18,824 — still elevated despite slight "
-                       "reduction, showing smoothing in action"},
+             "detail": "Aug-Oct 2026 quota 19,085 (+0.2% QoQ): Cat A 7,134 (-300), "
+                       "Cat B 5,527 (+322). Smoothing is holding supply flat — no visible "
+                       "deregistration surge yet, and premiums hit records regardless"},
         ],
     },
 ]
@@ -363,11 +374,15 @@ def render():
     st.markdown(
         f"**Net policy direction:** {net['up']} upward, "
         f"{net['down']} downward, {net['uncertain']} uncertain. "
-        f"The policy environment is currently **net bullish** for COE prices — "
-        f"most confirmed changes (PARF cut, EEAI sunset, COE recat uncertainty) "
-        f"push premiums up, while downward forces (supply smoothing, ERP 2.0) "
-        f"are structural dampeners rather than price reducers."
+        f"On strong signals (>= 40 pts) it is {net['strong_up']} up vs "
+        f"{net['strong_down']} down, so the policy environment reads "
+        f"**{_NET_LABEL[net['net_direction']]}** for COE prices. The confirmed upward "
+        f"changes (PARF cut, EEAI sunset) raise ownership cost, while the downward "
+        f"forces (supply smoothing, ERP 2.0) are structural dampeners rather than price "
+        f"reducers. The proposed Cat A/B merger is designed to be level-neutral and "
+        f"mainly redistributes cost by car value."
     )
+    st.caption(f"Policy evidence last reviewed {RADAR_REVIEWED}.")
 
     st.markdown("")
 

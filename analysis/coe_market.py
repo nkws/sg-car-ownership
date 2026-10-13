@@ -3,7 +3,7 @@
 A structural analysis of supply dynamics, policy shifts, and the
 feast-famine rhythm that governs Singapore's COE market.
 
-Published: March 2026
+Published: March 2026. Revised: 13 October 2026 (outlook, strategy, EV incentive figures).
 """
 
 import re
@@ -36,6 +36,19 @@ CAT_AB_DATA = [
     {"period": "Feb 26 R1", "catA": 106320, "catB": 110890},
     {"period": "Mar 26 R1", "catA": 108220, "catB": 114002},
     {"period": "Mar 26 R2", "catA": 111890, "catB": 115568},
+    {"period": "Apr 26 R1", "catA": 118000, "catB": 121000},
+    {"period": "Apr 26 R2", "catA": 123010, "catB": 121001},
+    {"period": "May 26 R1", "catA": 124790, "catB": 126236},
+    {"period": "May 26 R2", "catA": 124229, "catB": 129501},
+    {"period": "Jun 26 R1", "catA": 126009, "catB": 126989},
+    {"period": "Jun 26 R2", "catA": 123847, "catB": 123502},
+    {"period": "Jul 26 R1", "catA": 129000, "catB": 130889},
+    {"period": "Jul 26 R2", "catA": 126000, "catB": 129890},
+    {"period": "Aug 26 R1", "catA": 123890, "catB": 129910},
+    {"period": "Aug 26 R2", "catA": 128501, "catB": 131001},
+    {"period": "Sep 26 R1", "catA": 133009, "catB": 135001},
+    {"period": "Sep 26 R2", "catA": 131890, "catB": 133000},
+    {"period": "Oct 26 R1", "catA": 130001, "catB": 130100},
 ]
 
 CYCLE_DATA = [
@@ -88,54 +101,67 @@ FORCE_DATA = [
      "detail": "BYD, Zeekr, Xpeng intensifying competition; more bids per round"},
     {"name": "PHV Fleet Growth", "direction": "up", "magnitude": 45,
      "detail": "Private-hire fleets snap up COEs; some excess capacity risk (Shariot)"},
-    {"name": "EEAI Sunset (Jan 2027)", "direction": "up", "magnitude": 50,
-     "detail": "EV rebate drops from \\$40K to \\$30K to \\$0; pull-forward demand in 2026"},
+    {"name": "EEAI Sunset (Jan 2027)", "direction": "up", "magnitude": 40,
+     "detail": "EV incentives fall from up to \\$30K (VES \\$22.5K + EEAI ≤\\$7.5K) in 2026 to "
+               "\\$20K (VES only) in 2027 — a ~\\$10K cliff; pull-forward demand in Q4 2026"},
+    {"name": "COE Category Merger Proposal (Oct 2026)", "direction": "up", "magnitude": 35,
+     "detail": "LTA consultation on merging Cat A/B with a ±\\$15K OMV feebate. Not policy yet, "
+               "but rule-change uncertainty can pull purchases forward"},
     {"name": "Potential Recession (Global)", "direction": "down", "magnitude": 55,
      "detail": "If US tariffs / slowdown spill over, buyer sentiment weakens"},
     {"name": "0% Vehicle Growth Rate (to Jan 2028)", "direction": "up", "magnitude": 65,
      "detail": "No net addition to vehicle population; pure replacement system"},
 ]
 
+# Q2-Q3 2026 keep their original Mar 2026 forecast ranges so the miss stays
+# visible; the note records the actual outcome. Q4 2026 onward were revised on
+# 13 Oct 2026 after Cat A set records and quotas stayed flat.
+OUTLOOK_REVISED = "13 Oct 2026"
+
 QUARTERLY_OUTLOOK = [
-    {"quarter": "Q2 2026 (Apr-Jun)", "range": "\\$105K - \\$115K", "outlook": "Sideways to slight up",
+    {"quarter": "Q2 2026 (Apr-Jun)", "range": "\\$105K - \\$115K", "outlook": "Missed — came in above band",
+     "color": "#e15759",
+     "note": "Mar 2026 forecast: sideways to slight up. Actual Cat A \\$118K-\\$126K across six "
+             "rounds; Cat A closed above Cat B twice (22 Apr, 17 Jun)."},
+    {"quarter": "Q3 2026 (Jul-Sep)", "range": "\\$95K - \\$108K", "outlook": "Missed — no dip, new records",
+     "color": "#e15759",
+     "note": "Mar 2026 forecast: moderate dip begins. Actual Cat A \\$123.9K-\\$133.0K, record "
+             "\\$133,009 on 9 Sep. Aug-Oct quota rose only 0.2% QoQ, so the expected "
+             "deregistration-driven supply rise has not shown up in quotas."},
+    {"quarter": "Q4 2026 (Oct-Dec)", "range": "\\$120K - \\$135K", "outlook": "Elevated plateau",
      "color": "#f28e2b",
-     "note": "3-week gap before Apr R1 may cause a spike. Feb-Apr quota slightly reduced. "
-             "EEAI pull-forward demand still active."},
-    {"quarter": "Q3 2026 (Jul-Sep)", "range": "\\$95K - \\$108K", "outlook": "Moderate dip begins",
-     "color": "#edc949",
-     "note": "New May-Jul quota should reflect rising deregistrations. Market sentiment may soften "
-             "if global recession materialises. This is the start of the window."},
-    {"quarter": "Q4 2026 (Oct-Dec)", "range": "\\$85K - \\$100K", "outlook": "Best window (if recession hits)",
-     "color": "#59a14f",
-     "note": "Peak supply from deregistration wave coincides with year-end budget tightening. "
-             "If recession sentiment deepens, expect the lowest point. EEAI ends Jan 2027 -> "
-             "last rush for EV incentives could spike Dec."},
-    {"quarter": "Q1 2027 (Jan-Mar)", "range": "\\$88K - \\$105K", "outlook": "Rebound risk",
+     "note": "Revised Oct 2026 (was \\$85K-\\$100K). Oct R1 Cat A \\$130,001 after two rounds "
+             "of easing off the Sep peak. Watch the Nov-Jan quota (announced late Oct) — the dip thesis "
+             "needs a visible quota increase. EEAI/VES step-down on 1 Jan may lift Dec EV bids."},
+    {"quarter": "Q1 2027 (Jan-Mar)", "range": "\\$110K - \\$135K", "outlook": "Wide — policy-driven",
      "color": "#f28e2b",
-     "note": "Post-EEAI demand normalisation. CNY rush. If economy recovers, pent-up demand "
-             "floods back. The window may already be closing."},
-    {"quarter": "Q2-Q3 2027", "range": "\\$90K - \\$110K", "outlook": "Stabilisation at new floor",
+     "note": "Revised Oct 2026 (was \\$88K-\\$105K). EEAI ends, VES EV rebate drops to \\$20K. "
+             "Category-merger findings due H1 2027; uncertainty about feebate bands could "
+             "either pull bids forward or freeze them. Low confidence."},
+    {"quarter": "Q2-Q3 2027", "range": "\\$100K - \\$130K", "outlook": "Dip only if supply finally rises",
      "color": "#b07aa1",
-     "note": "PARF cut effect starts biting — fewer early deregistrations reducing COE recycling. "
-             "Supply growth decelerates."},
+     "note": "Revised Oct 2026 (was \\$90K-\\$110K). A move toward \\$100K needs quotas to "
+             "actually expand from the 2016-17 deregistration echo. PARF cut reduces early "
+             "scrapping and works against that. Low confidence."},
 ]
 
 STRATEGY_ITEMS = [
-    {"label": "Primary Window", "value": "Jul - Nov 2026",
-     "detail": "Wait for the Q3 quota reset and potential recession softening. "
-               "Bid in Aug-Oct if Cat A dips below \\$95K."},
+    {"label": "Primary Window", "value": "Jul - Nov 2026 (did not open)",
+     "detail": "The trigger was Cat A below \\$95K in Aug-Oct. Cat A instead ran \\$124K-\\$133K. "
+               "The original window has effectively failed; the Nov-Jan quota is the next test."},
     {"label": "Aggressive Target", "value": "\\$80K Cat A",
-     "detail": "Achievable only if a meaningful recession hits + deregistration wave fully "
-               "materialises. Low-probability scenario (~20%)."},
-    {"label": "Realistic Target", "value": "\\$88K - \\$95K Cat A",
-     "detail": "More probable range at the trough (~50% probability). Still delivers "
-               "~\\$13K-\\$15K annual depreciation if held 10 years."},
-    {"label": "EV Insulation", "value": "EEAI + VES still active in 2026",
-     "detail": "Tesla Model Y still qualifies for ~\\$25K in combined incentives "
-               "(EEAI \\$30K + VES). After Jan 2027, EEAI drops to \\$0. Act before Dec 2026."},
-    {"label": "Risk of Waiting", "value": "Jan 2027 EEAI Cliff",
-     "detail": "If you wait past Dec 2026 for a lower COE, you lose \\$30K in EEAI rebate. "
-               "The maths strongly favours bidding in H2 2026 even at slightly higher COE."},
+     "detail": "Was a ~20% scenario in Mar 2026. Now ~\\$50K below market with no supply "
+               "signal pointing there — treat as very unlikely in the next two quarters."},
+    {"label": "Realistic Target", "value": "\\$88K - \\$95K Cat A (under review)",
+     "detail": "Original Mar 2026 trough call. Needs a sustained quota increase to become "
+               "live again; not supported by any round since March."},
+    {"label": "EV Incentives", "value": "Up to \\$30K in 2026 → \\$20K in 2027",
+     "detail": "2026: VES Band A rebate \\$22,500 + EEAI 45% of ARF capped at \\$7,500. "
+               "2027: VES Band A \\$20,000 only (EEAI ends 31 Dec 2026). Max loss ~\\$10K."},
+    {"label": "Risk of Waiting", "value": "~\\$10K incentive cliff on 1 Jan 2027",
+     "detail": "Waiting into 2027 only pays if the COE you'd win falls by more than ~\\$10K "
+               "(less if your EV doesn't get the full \\$7,500 EEAI). A possible Cat A/B merger "
+               "with a ±\\$15K OMV feebate is a second, larger unknown — not yet policy."},
 ]
 
 WHY_DIFFERENT = [
@@ -472,43 +498,45 @@ def quarter_band_for(today: datetime | None = None, offset: int = 0) -> dict | N
 
 # When the analyst-written prose was authored. Surface this date so readers
 # know the structural narrative is a snapshot, not a live document.
-THESIS_DATE = datetime(2026, 3, 1)
+# Originally authored Mar 2026; revised 13 Oct 2026 after Cat A set records
+# instead of dipping (see QUARTERLY_OUTLOOK notes for the original calls).
+THESIS_DATE = datetime(2026, 10, 13)
 
 # Each anchor encodes one numeric/temporal claim from the prose. The audit
 # function checks each against current data and tags it OK / WATCH / STALE so
 # we know when to revisit the narrative.
 THESIS_ANCHORS: list[dict] = [
     {
-        "claim": "Cat A 'currently in the ~$110K range'",
+        "claim": "Cat A 'currently around $130K'",
         "tab": "Big Picture",
         "kind": "price_band",
-        "anchor": 110000,
-        "tolerance_pct": 15,
+        "anchor": 130000,
+        "tolerance_pct": 8,
     },
     {
-        "claim": "Forecasted Cat A trough: $85K–$95K by mid-2027",
+        "claim": "Revised: possible ease toward $100K–$120K by Q3 2027",
         "tab": "Big Picture / Forces",
         "kind": "trough",
-        "low": 85000,
-        "high": 95000,
-        "trough_by": datetime(2027, 6, 30),
+        "low": 100000,
+        "high": 120000,
+        "trough_by": datetime(2027, 9, 30),
     },
     {
-        "claim": "Reference peak: Cat A $128K (Oct 2025 spike)",
+        "claim": "Reference peak: Cat A $133,009 (9 Sep 2026 record)",
         "tab": "Trajectory",
         "kind": "peak_reference",
-        "peak_value": 128000,
-        "peak_period_match": "Oct 25",
+        "peak_value": 133009,
+        "peak_period_match": "Sep 26",
     },
     {
-        "claim": "Cat A–B gap is unusually narrow (~$3.7K)",
+        "claim": "Cat A–B gap near zero (Cat A above B twice in Q2 2026)",
         "tab": "Trajectory",
         "kind": "gap_band",
-        "anchor": 3700,
-        "tolerance_pct": 50,
+        "anchor": 1000,
+        "tolerance_pct": 200,
     },
     {
-        "claim": "Optimal buying window: Oct–Nov 2026",
+        "claim": "Original buying window: Oct–Nov 2026 (conditional on a dip)",
         "tab": "Buying Window",
         "kind": "date_window",
         "start": datetime(2026, 10, 1),
@@ -655,13 +683,15 @@ def _render_overview():
         "Where Cat A and Cat B are now, and the analyst's call on where they're heading."
     )
     st.markdown(
-        "Singapore's COE market is entering the early stages of a structural supply expansion "
-        "driven by the 10-year deregistration wave from the 2016-2017 registration boom. "
-        "However, this isn't a straightforward \"prices will crash\" story. Multiple "
-        "countervailing forces — the Budget 2026 PARF cuts, persistent affluent demand, "
-        "EV adoption dynamics, and LTA's own supply-smoothing mechanisms — are creating a "
-        "**moderated, drawn-out dip** rather than a sharp correction."
+        "The March 2026 thesis was that the 10-year deregistration wave from the 2016-2017 "
+        "registration boom would produce a moderated dip through H2 2026. **As of Oct 2026 "
+        "that dip has not happened.** Cat A set a record \\$133,009 on 9 Sep, Cat A and B "
+        "have converged to within \\$99, and the Aug-Oct quota rose only 0.2% — the supply "
+        "expansion is not yet visible in quotas. Demand (affluent buyers, the Q4 EV-incentive "
+        "rush, PARF-driven holding) has outrun supply smoothing. LTA's 8 Oct consultation on "
+        "merging Cat A and B adds a policy unknown on top."
     )
+    st.caption(f"Narrative and outlook revised {OUTLOOK_REVISED}; originally published Mar 2026.")
     st.markdown("")
 
     data = _load_recent_premiums()
@@ -672,15 +702,17 @@ def _render_overview():
     if latest:
         anchor_k = round(latest["catA"] / 5000) * 5000 // 1000
         outlook_line = (
-            f"**Most probable outcome:** Cat A premiums ease from the current "
-            f"~\\${anchor_k}K range toward \\$85K-\\$95K by late 2026 to mid-2027, "
-            f"then stabilise or rebound. The window is real but narrower than the "
-            f"market expects."
+            f"**Revised outlook (low confidence):** Cat A holds around the current "
+            f"~\\${anchor_k}K range through Q4 2026. Any meaningful ease toward "
+            f"\\$100K-\\$120K needs quotas to actually rise and is unlikely before "
+            f"mid-2027. The old \\$85K-\\$95K trough call is not supported by any round "
+            f"since March."
         )
     else:
         outlook_line = (
-            "**Most probable outcome:** Cat A premiums ease toward \\$85K-\\$95K by "
-            "late 2026 to mid-2027, then stabilise or rebound."
+            "**Revised outlook (low confidence):** Cat A holds near recent highs through "
+            "Q4 2026; an ease toward \\$100K-\\$120K needs quotas to rise and is unlikely "
+            "before mid-2027."
         )
     st.markdown(outlook_line)
 
@@ -981,9 +1013,10 @@ def _render_forces():
 
     st.markdown("")
     st.info(
-        "Upward forces currently outweigh downward ones. This is why the \"dip\" will be "
-        "moderate — expect **\\$85K-\\$95K** for Cat A at the trough, not \\$60K-\\$70K. "
-        "The market has structurally repriced car ownership in Singapore."
+        "Upward forces currently outweigh downward ones, and 2026 data confirms it: instead "
+        "of a moderate dip to \\$85K-\\$95K, Cat A climbed to a \\$133K record. The supply-side "
+        "forces are real but have not reached quotas yet. Until they do, expect Cat A to "
+        "stay in the \\$120K-\\$135K band."
     )
 
 
@@ -994,7 +1027,9 @@ def _render_buying_window():
     )
     st.markdown(
         "Based on the supply cycle, PARF dynamics, EEAI sunset, and demand signals, "
-        "here's a quarter-by-quarter projection:"
+        "here's a quarter-by-quarter projection. Elapsed quarters keep their original "
+        "Mar 2026 ranges with the actual outcome noted; later quarters were revised "
+        f"{OUTLOOK_REVISED}."
     )
     st.markdown("")
 
@@ -1033,12 +1068,13 @@ def _render_buying_window():
     # Critical insight
     st.markdown("")
     st.warning(
-        "**The Critical Insight:** The \\$30K EEAI rebate you'd lose after Dec 2026 dwarfs any "
-        "plausible COE savings from waiting into 2027. Even if COE drops \\$15K further in "
-        "Q1 2027 (optimistic), you'd be net \\$15K worse off after losing EEAI. The optimal "
-        "play is to bid aggressively in **Oct-Nov 2026** when deregistration supply peaks "
-        "and year-end sentiment is weakest, while EEAI is still intact. That's your "
-        "convergence point — maximum supply, softened demand, and full incentive stack."
+        "**The Critical Insight (corrected Oct 2026):** The earlier version said waiting cost a "
+        "\\$30K EEAI rebate. That was wrong — EEAI is capped at \\$7,500 in 2026; the \\$30K was "
+        "the *combined* EV incentive. The real 1 Jan 2027 cliff is ~\\$10K (EEAI \\$7.5K + VES "
+        "rebate stepping from \\$22.5K to \\$20K). So waiting into 2027 pays if the COE you'd "
+        "win falls by more than ~\\$10K. With Cat A at ~\\$130K and no quota increase yet, "
+        "neither outcome is clear — the Nov-Jan quota (late Oct) and the category-merger "
+        "findings (H1 2027) are the two things to watch before committing."
     )
 
 
@@ -1211,12 +1247,12 @@ GLOSSARY: list[tuple[str, str]] = [
      "Open Market Value — the LTA-assessed import cost of a car (CIF + "
      "incidental costs), the basis for ARF and other vehicle taxes."),
     ("EEAI",
-     "EV Early Adoption Incentive — a rebate (currently up to ~S$30K) that "
-     "reduces the cost of registering an EV. Sunsets 1 Jan 2027, after which "
-     "the rebate drops to S$0."),
+     "EV Early Adoption Incentive — 45% off the ARF, capped at S$7,500 in "
+     "2026 (S$15,000 in 2025). Ends 31 Dec 2026."),
     ("VES",
      "Vehicle Emissions Scheme — surcharge or rebate at registration based "
-     "on the car's CO₂/NOx/HC/CO bands. Stacks with EEAI for EVs."),
+     "on the car's emissions band. From 2026 only EVs get rebates: Band A "
+     "S$22,500 in 2026, S$20,000 in 2027. Stacks with EEAI in 2026."),
     ("VGR",
      "Vehicle Growth Rate — the policy cap on net growth of Singapore's "
      "vehicle population. Currently 0%, meaning every new COE has to come "
