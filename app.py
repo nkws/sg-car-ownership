@@ -3,7 +3,7 @@
 Top-level navigation (rendered by st.navigation):
   Home  — personal daily briefing (app_pages/home.py)
   COE   — financial-stress dashboard (dashboard.py)
-  Forecasts — scored prediction ledger (app_pages/forecasts.py)
+  Intel — weekly sector intel brief (app_pages/intel.py)
 
 Each page script owns its own st.set_page_config so dashboard.py's
 existing configuration keeps working without modification.
@@ -25,12 +25,12 @@ coe_page = st.Page(
     icon="🚗",
 )
 
-forecasts_page = st.Page(
-    "app_pages/forecasts.py",
-    title="Forecasts",
-    icon="🎯",
-    url_path="forecasts",
+intel_page = st.Page(
+    "app_pages/intel.py",
+    title="Intel",
+    icon="🛰️",
+    url_path="intel",
 )
 
-pg = st.navigation([home_page, coe_page, forecasts_page])
+pg = st.navigation([home_page, coe_page, intel_page])
 pg.run()
