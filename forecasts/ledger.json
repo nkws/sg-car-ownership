@@ -3,7 +3,7 @@
   "forecasts": [
     {
       "id": "20261013-nvda-q3fy27-rev-112bn",
-      "status": "proposed",
+      "status": "active",
       "theme": "AI & tech",
       "question": "Will Nvidia report Q3 FY2027 total revenue of at least US$112.0bn?",
       "resolution": "Resolves YES if GAAP total revenue for the fiscal quarter ending late October 2026, as stated in Nvidia's Q3 FY2027 earnings press release / 8-K (investor.nvidia.com, scheduled 18 Nov 2026), is >= US$112,000m. NO otherwise. If not reported by resolve_by, resolves NO.",
@@ -28,7 +28,7 @@
     },
     {
       "id": "20261013-fed-hike-dec-2026",
-      "status": "proposed",
+      "status": "active",
       "theme": "Macro",
       "question": "Will the Fed raise the federal funds target range at its 8-9 December 2026 FOMC meeting?",
       "resolution": "Resolves YES if the FOMC statement released at the conclusion of the 8-9 Dec 2026 meeting (federalreserve.gov) raises the upper bound of the federal funds target range above its level immediately before that meeting (any size). NO if held or cut.",
@@ -54,7 +54,7 @@
     },
     {
       "id": "20261013-coe-catb-below-120k",
-      "status": "proposed",
+      "status": "active",
       "theme": "COE & cars",
       "question": "Will the Category B COE premium close below S$120,000 in any open bidding exercise held from 14 Oct 2026 to 31 Jan 2027?",
       "resolution": "Resolves YES if any LTA COE open bidding exercise result published between 14 Oct 2026 and 31 Jan 2027 shows a Category B Quota Premium below S$120,000 (source: LTA OneMotoring COE results / data.gov.sg). NO otherwise.",
@@ -80,7 +80,7 @@
     },
     {
       "id": "20261013-sti-below-5000",
-      "status": "proposed",
+      "status": "active",
       "theme": "SG equities",
       "question": "Will the Straits Times Index close below 5,000 on any trading day before 31 March 2027?",
       "resolution": "Resolves YES if the official FTSE Straits Times Index daily closing level is below 5,000.00 on any SGX trading day from 14 Oct 2026 to 31 Mar 2027 inclusive (source: SGX / FTSE Russell / Investing.com historical data). NO otherwise.",
@@ -106,7 +106,7 @@
     },
     {
       "id": "20261013-wti-115-by-dec",
-      "status": "proposed",
+      "status": "active",
       "theme": "Energy",
       "question": "Will the WTI crude oil spot price close at or above US$115 per barrel on any day before 31 December 2026?",
       "resolution": "Resolves YES if the EIA daily Cushing, OK WTI spot price (series RWTC, eia.gov/dnav/pet/hist/rwtcD.htm) is >= US$115.00 for any trading day from 14 Oct 2026 to 31 Dec 2026 inclusive. NO otherwise.",
@@ -132,7 +132,7 @@
     },
     {
       "id": "20261013-fao-ffpi-dec26-above-136",
-      "status": "proposed",
+      "status": "active",
       "theme": "Staples",
       "question": "Will the FAO Food Price Index for December 2026 be above 136.0 points?",
       "resolution": "YES if the FAO Food Price Index value for December 2026, as first published by FAO (fao.org/worldfoodsituation/foodpricesindex, ~early Jan 2027), is > 136.0. NO otherwise. Later revisions are ignored.",
@@ -157,7 +157,7 @@
     },
     {
       "id": "20261013-sg-tariff-q1-2027-up",
-      "status": "proposed",
+      "status": "active",
       "theme": "Energy",
       "question": "Will SP Group's Q1 2027 household electricity tariff (before GST) be higher than Q4 2026's 28.59 cents/kWh?",
       "resolution": "YES if the low-tension household tariff for 1 Jan-31 Mar 2027, before GST, announced by SP Group (spgroup.com.sg tariff information / media release, ~end Dec 2026), is > 28.59 cents/kWh. NO if equal or lower.",
@@ -182,7 +182,7 @@
     },
     {
       "id": "20261013-jkm-above-20-ye2026",
-      "status": "proposed",
+      "status": "active",
       "theme": "Energy",
       "question": "Will the front-month JKM LNG futures contract settle above US$20.00/MMBtu on 31 December 2026?",
       "resolution": "YES if the CME 'LNG Japan/Korea Marker (Platts) Futures' nearest listed contract month (expected Feb 2027) has a daily settlement > US$20.00/MMBtu on 31 Dec 2026 (or the last CME settlement day of 2026), per CME Group settlements. NO otherwise.",
@@ -207,7 +207,7 @@
     },
     {
       "id": "20261013-sg-food-cpi-dec26-2-5",
-      "status": "proposed",
+      "status": "active",
       "theme": "Staples",
       "question": "Will Singapore's food inflation for December 2026 be 2.5% year-on-year or higher?",
       "resolution": "YES if the food inflation rate (y/y) for December 2026 in the MAS-MTI 'Consumer Price Developments in December 2026' release (~late Jan 2027) is >= 2.5%. NO if lower.",
@@ -232,7 +232,7 @@
     },
     {
       "id": "20261013-wmt-q3fy27-us-comps-3pct",
-      "status": "proposed",
+      "status": "active",
       "theme": "Staples",
       "question": "Will Walmart U.S. report Q3 FY2027 comparable sales growth (ex-fuel) of 3.0% or more?",
       "resolution": "YES if Walmart U.S. comparable sales growth excluding fuel for the quarter ending ~31 Oct 2026, as reported in Walmart's Q3 FY2027 earnings release (stock.walmart.com / 8-K, ~mid-late Nov 2026), is >= 3.0%. NO if lower.",

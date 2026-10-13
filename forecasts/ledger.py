@@ -79,38 +79,38 @@ def brier(p: float, outcome: bool) -> float:
     return (p - (1.0 if outcome else 0.0)) ** 2
 
 
-def scored(forecasts: list[dict], key: str = "your_p") -> list[tuple[float, bool]]:
+def scored(forecasts: list[dict], key: str = "claude_p") -> list[tuple[float, bool]]:
     return [(f[key], f["outcome"]) for f in forecasts
             if f.get("status") == "resolved"
             and f.get(key) is not None
             and isinstance(f.get("outcome"), bool)]
 
 
-def mean_brier(forecasts: list[dict], key: str = "your_p") -> float | None:
+def mean_brier(forecasts: list[dict], key: str = "claude_p") -> float | None:
     pairs = scored(forecasts, key)
     if not pairs:
         return None
     return sum(brier(p, o) for p, o in pairs) / len(pairs)
 
 
-def head_to_head(forecasts: list[dict], other: str) -> tuple[float, float, int] | None:
-    """Mean Brier for you vs `other` on forecasts where both gave a number."""
+def head_to_head(forecasts: list[dict], a: str, b: str) -> tuple[float, float, int] | None:
+    """Mean Brier for forecaster `a` vs `b` on resolved rows where both gave a number."""
     both = [f for f in forecasts
             if f.get("status") == "resolved" and isinstance(f.get("outcome"), bool)
-            and f.get("your_p") is not None and f.get(other) is not None]
+            and f.get(a) is not None and f.get(b) is not None]
     if not both:
         return None
-    you = sum(brier(f["your_p"], f["outcome"]) for f in both) / len(both)
-    them = sum(brier(f[other], f["outcome"]) for f in both) / len(both)
-    return you, them, len(both)
+    sa = sum(brier(f[a], f["outcome"]) for f in both) / len(both)
+    sb = sum(brier(f[b], f["outcome"]) for f in both) / len(both)
+    return sa, sb, len(both)
 
 
 CAL_BINS = [(0.0, 0.2), (0.2, 0.4), (0.4, 0.6), (0.6, 0.8), (0.8, 1.0001)]
 
 
-def calibration(forecasts: list[dict]) -> list[dict]:
-    """Per probability bucket: what you said on average vs how often it happened."""
-    pairs = scored(forecasts)
+def calibration(forecasts: list[dict], key: str = "claude_p") -> list[dict]:
+    """Per probability bucket: average stated probability vs how often it happened."""
+    pairs = scored(forecasts, key)
     rows = []
     for lo, hi in CAL_BINS:
         bucket = [(p, o) for p, o in pairs if lo <= p < hi]
