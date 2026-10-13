@@ -103,6 +103,32 @@
       "outcome": null,
       "outcome_source": null,
       "resolved_on": null
+    },
+    {
+      "id": "20261013-wti-115-by-dec",
+      "status": "proposed",
+      "theme": "Energy",
+      "question": "Will the WTI crude oil spot price close at or above US$115 per barrel on any day before 31 December 2026?",
+      "resolution": "Resolves YES if the EIA daily Cushing, OK WTI spot price (series RWTC, eia.gov/dnav/pet/hist/rwtcD.htm) is >= US$115.00 for any trading day from 14 Oct 2026 to 31 Dec 2026 inclusive. NO otherwise.",
+      "resolve_by": "2026-12-31",
+      "claude_p": 0.2,
+      "crowd_p": 0.3,
+      "crowd_source": "https://kalshi.com/markets/kxwtimax/wti-oil-high/kxwtimax-26dec31",
+      "indicators": [
+        "WTI ~US$93.3, Brent ~US$106 on 13 Oct 2026 (Brent highest close since 15 Sep)",
+        "Tanker attacks near Hormuz; Houthi strike on Riyadh airport",
+        "OPEC cut 2026 demand-growth forecast to 0.4 mb/d from 1.4 mb/d",
+        "US temporarily lifted sanctions on Russian fuel / diesel supply",
+        "US 10y at 5.36% and Fed hiking: demand headwind"
+      ],
+      "rationale": "Base rate: WTI needs a ~23% rise in about 11 weeks. At the ~40-45% annualised volatility of this war-risk regime, a driftless price touches a level ~1 sigma above spot about 30% of the time intraday, and somewhat less on daily closes. Update this week: supply risk flared again (Hormuz tanker attacks, Houthi strike on Riyadh), lifting Brent to its highest close in a month. Demand-side signals point the other way: OPEC slashed its demand-growth forecast, Washington is easing Russian fuel supply, and rising global rates weigh on activity. Spikes in this regime have faded rather than compounded. ~20%, below Kalshi's ~30%, which also counts intraday highs and so sits slightly above a daily-close rule. Feeds Gate 1 (oil physical spot) of the Cat B thesis.",
+      "your_p": null,
+      "your_note": null,
+      "created": "2026-10-13",
+      "accepted": null,
+      "outcome": null,
+      "outcome_source": null,
+      "resolved_on": null
     }
   ]
 }
