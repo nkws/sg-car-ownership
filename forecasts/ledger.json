@@ -154,6 +154,106 @@
       "outcome": null,
       "outcome_source": null,
       "resolved_on": null
+    },
+    {
+      "id": "20261013-sg-tariff-q1-2027-up",
+      "status": "proposed",
+      "theme": "Energy",
+      "question": "Will SP Group's Q1 2027 household electricity tariff (before GST) be higher than Q4 2026's 28.59 cents/kWh?",
+      "resolution": "YES if the low-tension household tariff for 1 Jan-31 Mar 2027, before GST, announced by SP Group (spgroup.com.sg tariff information / media release, ~end Dec 2026), is > 28.59 cents/kWh. NO if equal or lower.",
+      "resolve_by": "2027-01-05",
+      "claude_p": 0.85,
+      "crowd_p": null,
+      "crowd_source": null,
+      "indicators": [
+        "Brent ~US$103-106 in mid-Oct vs lower Jul-Aug levels",
+        "Oil-indexed LNG/piped gas costs for SG gencos",
+        "Q4 2026 tariff -10.4% to 28.59 c/kWh (Q3: 31.91)",
+        "Rystad expects single-digit Q1 2027 increase"
+      ],
+      "rationale": "Base rate: SP Group sets the tariff off fuel costs in the first ~2.5 months of the prior quarter, so the direction of the quarterly change follows oil-linked gas costs between windows in the large majority of quarters. Update: Q4 fell 10.4% because July-August oil was much lower; Brent rallied from mid-September and is ~US$103-106 in October on Gulf/Hormuz shipping risk, and Rystad expects a single-digit rise for Q1 2027. Main risks are a sharp oil reversal before early December or a downward network-cost revision. Electricity tariffs are one of the eight COE-thesis gates.",
+      "your_p": null,
+      "your_note": null,
+      "created": "2026-10-13",
+      "accepted": null,
+      "outcome": null,
+      "outcome_source": null,
+      "resolved_on": null
+    },
+    {
+      "id": "20261013-jkm-above-20-ye2026",
+      "status": "proposed",
+      "theme": "Energy",
+      "question": "Will the front-month JKM LNG futures contract settle above US$20.00/MMBtu on 31 December 2026?",
+      "resolution": "YES if the CME 'LNG Japan/Korea Marker (Platts) Futures' nearest listed contract month (expected Feb 2027) has a daily settlement > US$20.00/MMBtu on 31 Dec 2026 (or the last CME settlement day of 2026), per CME Group settlements. NO otherwise.",
+      "resolve_by": "2027-01-05",
+      "claude_p": 0.5,
+      "crowd_p": null,
+      "crowd_source": null,
+      "indicators": [
+        "JKM high-US$24s/MMBtu on 2 Oct (pre-Hormuz-closure ~US$10.6)",
+        "US-Iran ceasefire talks / Hormuz shipping status",
+        "Qatar LNG force majeure (since Mar 2026)",
+        "EU storage 72% on 2 Oct, 17.5% below 5-yr avg; NE Asia winter weather"
+      ],
+      "rationale": "Base rate: front-month JKM rarely moves more than ~20% over a 2.5-month window outside of supply shocks, which on its own favours staying above US$20 from the mid-24s. Update: prices are being held up by the Hormuz closure and Qatar's force majeure, with Europe's low storage competing for cargoes into winter; but weak Chinese/Korean buying, a mild-winter outlook and progress in US-Iran ceasefire talks already knocked JKM ~US$1-2 lower last week, and a reopening would collapse the risk premium quickly. That binary makes this a genuine coin flip. Feeds SG's gas-fired power costs with a lag.",
+      "your_p": null,
+      "your_note": null,
+      "created": "2026-10-13",
+      "accepted": null,
+      "outcome": null,
+      "outcome_source": null,
+      "resolved_on": null
+    },
+    {
+      "id": "20261013-sg-food-cpi-dec26-2-5",
+      "status": "proposed",
+      "theme": "Staples",
+      "question": "Will Singapore's food inflation for December 2026 be 2.5% year-on-year or higher?",
+      "resolution": "YES if the food inflation rate (y/y) for December 2026 in the MAS-MTI 'Consumer Price Developments in December 2026' release (~late Jan 2027) is >= 2.5%. NO if lower.",
+      "resolve_by": "2027-01-31",
+      "claude_p": 0.45,
+      "crowd_p": null,
+      "crowd_source": null,
+      "indicators": [
+        "SG food inflation 2.1% Jun, 2.2% Jul, 2.3% Aug 2026",
+        "FAO Food Price Index 136.0 in Sep (highest since Nov 2022)",
+        "Energy/freight pass-through (Brent >US$100)",
+        "MAS S$NEER slope (stronger SGD damps imported food costs)"
+      ],
+      "rationale": "Base rate: SG food inflation moves slowly, typically 0.1-0.2pp a month, so a 0.2pp rise over four months is roughly even odds when the trend is up. Update: food inflation has edged up three months running to 2.3% in August, global food commodities hit a near-four-year high in September, and high energy and freight costs are feeding food services; offsetting, MAS has tightened three times this year and a stronger SGD cushions imported-food costs, and hawker/food-services prices are sticky but rarely accelerate fast. Slightly below even.",
+      "your_p": null,
+      "your_note": null,
+      "created": "2026-10-13",
+      "accepted": null,
+      "outcome": null,
+      "outcome_source": null,
+      "resolved_on": null
+    },
+    {
+      "id": "20261013-wmt-q3fy27-us-comps-3pct",
+      "status": "proposed",
+      "theme": "Staples",
+      "question": "Will Walmart U.S. report Q3 FY2027 comparable sales growth (ex-fuel) of 3.0% or more?",
+      "resolution": "YES if Walmart U.S. comparable sales growth excluding fuel for the quarter ending ~31 Oct 2026, as reported in Walmart's Q3 FY2027 earnings release (stock.walmart.com / 8-K, ~mid-late Nov 2026), is >= 3.0%. NO if lower.",
+      "resolve_by": "2026-11-30",
+      "claude_p": 0.4,
+      "crowd_p": null,
+      "crowd_source": null,
+      "indicators": [
+        "Walmart U.S. comps +2.6% in Q2 FY27 (slowest in ~6 years), ~80bp health & wellness drag",
+        "FY27 net sales guide raised to 4-5%; Q3 sales guide +3.0-3.75% cc",
+        "US consumer under higher rates (Fed hiking, 10y 5.3%) and fuel >US$90 WTI",
+        "Trade-down from higher-income shoppers"
+      ],
+      "rationale": "Base rate: Walmart U.S. comps ran ~4-5% for most of FY24-FY26, so 3% used to be a low bar, but the latest print was 2.6% and comps rarely re-accelerate by 40bp+ in one quarter without a calendar or pricing tailwind. Update: management raised full-year sales guidance, transactions are growing and trade-down tends to help Walmart in a squeeze; against that, the health-and-wellness drag persists, the Fed is hiking and fuel is expensive, which hurts lower-income discretionary baskets. Lean NO. A read on staples volumes vs pricing power.",
+      "your_p": null,
+      "your_note": null,
+      "created": "2026-10-13",
+      "accepted": null,
+      "outcome": null,
+      "outcome_source": null,
+      "resolved_on": null
     }
   ]
 }
