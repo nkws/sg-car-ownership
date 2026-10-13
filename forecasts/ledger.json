@@ -129,6 +129,31 @@
       "outcome": null,
       "outcome_source": null,
       "resolved_on": null
+    },
+    {
+      "id": "20261013-fao-ffpi-dec26-above-136",
+      "status": "proposed",
+      "theme": "Staples",
+      "question": "Will the FAO Food Price Index for December 2026 be above 136.0 points?",
+      "resolution": "YES if the FAO Food Price Index value for December 2026, as first published by FAO (fao.org/worldfoodsituation/foodpricesindex, ~early Jan 2027), is > 136.0. NO otherwise. Later revisions are ignored.",
+      "resolve_by": "2027-01-15",
+      "claude_p": 0.55,
+      "crowd_p": null,
+      "crowd_source": null,
+      "indicators": [
+        "FFPI 136.0 in Sep 2026 (highest since Nov 2022)",
+        "Sugar +6.1% m/m, cereals +5.1% m/m (US corn, Black Sea)",
+        "Brent >US$100: fertiliser, freight, biofuel demand for veg oils",
+        "Northern Hemisphere harvest pressure; meat index easing"
+      ],
+      "rationale": "Base rate: monthly FFPI moves are usually within +/-2% and a 3-month change is close to a coin flip, with mild momentum. Update: September rose to 136.0, the highest since November 2022, led by sugar (third straight rise) and cereals on weaker US corn yields and Black Sea disruption; oil above US$100 keeps input and freight costs high. Offsetting: seasonal harvest pressure and falling meat prices. Slight lean to YES on momentum and energy pass-through. Feeds the pricing-power read on Nestle/P&G/Unilever and Wilmar margins.",
+      "your_p": null,
+      "your_note": null,
+      "created": "2026-10-13",
+      "accepted": null,
+      "outcome": null,
+      "outcome_source": null,
+      "resolved_on": null
     }
   ]
 }
