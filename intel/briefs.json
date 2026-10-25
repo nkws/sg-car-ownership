@@ -2,6 +2,1117 @@
   "version": 1,
   "briefs": [
     {
+      "date": "2026-10-26",
+      "summary": "Two stresses got worse this week. Houthi strikes on Saudi Arabia hit the main Hormuz bypass, and Brent rose 6% to US$116.72, its highest settle since April. Asian LNG went above US$30. Meanwhile the AI funding worry spread from the neoclouds to the hyperscalers: Meta raised its capex floor but posted its first negative free cash flow since 2012, and chips had their worst day since June (SOX −6.7% on 22 Oct). Money moved into Treasuries (the 10y briefly closed below 5%) and staples. The costs are building underneath, though: P&G raised its commodity hit to US$1.4bn, and a December Fed hike is still about 78% priced. In SG, core inflation undershot at 2.0%, REITs bounced off their lows, and Cat B COE rose to S$131,901 as buyers rushed EV purchases ahead of the incentive cut. MSFT, GOOGL and AMZN (28–29 Oct), the FOMC (28 Oct) and the oil majors (29–30 Oct) are all in the coming week.",
+      "quiet": [],
+      "sections": [
+        {
+          "theme": "AI & tech",
+          "region": "Global",
+          "headline": "Meta raises its capex floor but posts its first cash burn since 2012; chips post their worst day since June and the hyperscaler verdict moves to 28–29 Oct",
+          "what_happened": [
+            {
+              "text": "Meta Q3 2026 (21 Oct): revenue US$64.6bn against US$63.31bn expected. EPS was US$3.83 against 6.67 expected, after a US$9.89bn legal charge (US$7.40 excluding it). The 2026 capex range was narrowed to US$135–145bn from US$130–145bn, which raises the floor. The Q4 revenue guide is US$73–76bn. No 2027 capex number was given; Meta said budgets are 'still in development' and it will keep investing aggressively.",
+              "source": "https://www.aichatdaily.com/ai-business/meta-narrows-2026-capex-135b-145b-plans-nonvoting"
+            },
+            {
+              "text": "Meta's Q3 free cash flow was −US$2.12bn, its first negative quarter since 2012. Capex including finance leases was US$34.9bn against US$32.8bn of operating cash flow. Meta also announced a new listed non-voting Class C share, to be paid as a one-for-one stock dividend effective 19 Jan 2027.",
+              "source": "https://cryptobriefing.com/meta-negative-free-cash-flow-ai-spending/"
+            },
+            {
+              "text": "Thu 22 Oct: META −7.0% to US$648.85, Philadelphia Semiconductor Index −6.7% (worst day since 23 Jun), Nasdaq Composite −2.60% to 26,008.86, S&P 500 −1.21%. AMD, Intel, Sandisk and Marvell each fell more than 8%. CoreWeave fell about 10% on renewed cost-of-capital worries.",
+              "source": "https://finance.yahoo.com/markets/stocks/articles/nasdaq-futures-drop-over-1-093849296.html"
+            },
+            {
+              "text": "Lam Research, September quarter (21 Oct): revenue US$8.22bn (+22% q/q), GAAP operating margin 40.0%, December-quarter guide US$8.6bn ± US$0.4bn. The stock still fell 11.8% on 22 Oct.",
+              "source": "https://www.sec.gov/Archives/edgar/data/0000707549/000070754926000052/lrcx_exhibitx991xq1x2027.htm"
+            },
+            {
+              "text": "Tesla Q3 2026 (21 Oct): revenue US$28.0bn, adjusted EPS US$0.48, quarterly capex US$4.7bn (+110% y/y). Prior 2026 guide was more than US$25bn, framed around 'superintelligence compute' and chip manufacturing. TSLA fell 3.1% on 22 Oct as investors weighed heavier 2027–28 spending plans.",
+              "source": "https://stocktwits.com/news-articles/markets/equity/tsla-stock-trades-flat-after-hours-following-drop-in-q3-revenue-earnings-and-heavy-ai-spending/cZxMWU7RBvC"
+            },
+            {
+              "text": "CoreWeave hit a 2026 intraday low of US$59.31 on 19 Oct and closed at US$61.12, the same day Goldman upgraded it. Total debt is about US$52bn; its 9.75% 2031 bond yields 15.7%. Five-year CDS reached a record 1,194.5bp in the prior week.",
+              "source": "https://www.forbes.com/sites/antoniopequenoiv/2026/10/19/coreweave-shares-briefly-drop-to-lowest-point-of-2026-as-goldman-sachs-issues-upgrade/"
+            },
+            {
+              "text": "Median on-demand H100 rental price, week of 19 Oct: US$3.71/GPU-hr across 40 providers, up about 10% over 4 weeks and about 25% over 12 months.",
+              "source": "https://getdeploying.com/gpu-price-index"
+            },
+            {
+              "text": "Coming up: Microsoft FQ1 2027 on Wed 28 Oct after the close; Alphabet Q3 on Wed 28 Oct (call 4:30pm ET); Amazon Q3 on Thu 29 Oct (call 5pm ET); Intel Q3 on Thu 29 Oct after the close.",
+              "source": "https://finviz.com/news/400058/microsoft-announces-quarterly-earnings-release-date"
+            }
+          ],
+          "first_order": "Demand-side data stayed firm. Meta raised its capex floor, Lam guided higher at a record margin, and GPU rental prices kept rising. The market sold the funding side instead: the first hyperscaler to report showed capex now exceeds operating cash flow and added a new equity class. Chips had their worst day since June, and CoreWeave fell again. The question has moved from 'is there demand' to 'can even the hyperscalers fund it from cash flow'. This week's losses were milder than last week's, but SMH, NVDA and QQQ all closed the week lower.",
+          "second_order": [
+            {
+              "sector": "Hyperscaler balance sheets (META, then MSFT/GOOGL/AMZN)",
+              "effect": "With Meta's free cash flow negative, more capex has to come from debt or equity. That makes funding language in the 28–29 Oct calls as important as the capex numbers.",
+              "direction": "down"
+            },
+            {
+              "sector": "Neoclouds / AI high-yield (CRWV, NBIS, ORCL)",
+              "effect": "A fresh ~10% drop in CoreWeave and bond yields near 15–16% keep its cost of capital punitive. If hyperscalers start leaning on external funding, the market for weaker borrowers gets more crowded.",
+              "direction": "down"
+            },
+            {
+              "sector": "Semicap and SG suppliers (LRCX, AMAT; UMS, AEM, Frencken)",
+              "effect": "Lam's record 40% margin and higher December guide point to continued tool orders. Lam's large Singapore manufacturing base and local precision-parts suppliers benefit from the volume. The 11.8% fall in Lam's shares shows that sentiment, not orders, is setting prices for now.",
+              "direction": "mixed"
+            },
+            {
+              "sector": "GPU rental / compute buyers",
+              "effect": "H100 median up about 10% in 4 weeks, so compute is still scarce and the costs of AI startups and app developers keep rising.",
+              "direction": "up"
+            },
+            {
+              "sector": "Rate-sensitive tech and DC REITs (incl. Keppel DC REIT, Digital Core REIT)",
+              "effect": "The US 10-year fell about 19bp to 4.95% on 22 Oct in a flight to safety, which eases discount rates and refinancing costs for data-centre landlords. Tenant credit risk at the neoclouds is still the offset.",
+              "direction": "mixed"
+            }
+          ],
+          "lean": "mixed",
+          "strength": "weak",
+          "evidence": [
+            "Meta 2026 capex guide narrowed to US$135–145bn from US$130–145bn (floor up US$5bn); Q4 revenue guide US$73–76bn (Q3 release, 21 Oct)",
+            "Against: Meta Q3 free cash flow −US$2.12bn; capex US$34.9bn exceeded operating cash flow of US$32.8bn",
+            "Lam Research: Sept-quarter revenue US$8.22bn (+22% q/q), GAAP operating margin 40.0%, December guide midpoint US$8.6bn (8-K exhibit 99.1, 21 Oct)",
+            "Tesla Q3 capex US$4.7bn (+110% y/y); 2026 guide of more than US$25bn framed around AI compute",
+            "H100 on-demand median US$3.71/hr, about +10% over 4 weeks (GPU price index, week of 19 Oct)",
+            "Against: SOX −6.7% on 22 Oct (worst day since 23 Jun); Nasdaq Composite −2.60%",
+            "Against: CoreWeave about −10% on 22 Oct; 9.75% 2031 bond at 15.7% yield; debt about US$52bn",
+            "Week vs last brief: SMH 539.79→527.20 (−2.3%), NVDA 214.13→210.96 (−1.5%), QQQ 709.80→704.40 (−0.8%)"
+          ],
+          "consensus": [
+            "The worry has moved from neocloud credit to hyperscaler cash burn; IBM's CEO said companies are 'getting worried if some of the AI spending is completely out of control with no real return'",
+            "'Every index on the planet is basically an AI index' (Manulife's Matt Miskin), so AI disappointment is seen as a systemic market risk",
+            "Sell-side still backs the neoclouds: Goldman upgraded CoreWeave and JPMorgan calls the business model sound despite the debt",
+            "MSFT/GOOGL (28 Oct) and AMZN (29 Oct) capex guides and funding commentary are widely seen as deciding the next leg"
+          ],
+          "levels": [
+            {
+              "name": "Nvidia",
+              "ticker": "NVDA",
+              "last": 210.96,
+              "support": 207.25,
+              "resistance": 222.19,
+              "low_52w": 164.27,
+              "high_52w": 243.37,
+              "your_band": null
+            },
+            {
+              "name": "VanEck Semiconductor ETF",
+              "ticker": "SMH",
+              "last": 527.2,
+              "support": 520.53,
+              "resistance": 560.63,
+              "low_52w": 315.05,
+              "high_52w": 671.83,
+              "your_band": null
+            },
+            {
+              "name": "Invesco QQQ",
+              "ticker": "QQQ",
+              "last": 704.4,
+              "support": 700.0,
+              "resistance": 727.95,
+              "low_52w": 555.6,
+              "high_52w": 762.86,
+              "your_band": null
+            }
+          ],
+          "flip_if": "Bullish if MSFT/GOOGL (28 Oct) and AMZN (29 Oct) raise capex while showing it can be funded from operating cash flow, and CoreWeave credit stabilises (CDS back below ~700bp, 2031 bond yield below ~12%). Bearish if a hyperscaler holds or cuts capex, a second hyperscaler shows negative free cash flow alongside new debt or equity funding, a neocloud misses a payment or draws emergency facilities, or the H100 rental index turns down. SMH closing below its 22 Oct low of 520.53 would confirm the market is pricing the bear case.",
+          "benchmark": {
+            "name": "VanEck Semiconductor ETF",
+            "ticker": "SMH",
+            "price_at_publish": 527.2
+          },
+          "check_on": "2027-01-25",
+          "result": null
+        },
+        {
+          "theme": "SG equities",
+          "region": "SG",
+          "headline": "STI dips below its 9 Oct low intraday on 23 Oct but closes flat on the week; REITs bounce 3% off 52-week lows ahead of the 29 Oct updates",
+          "what_happened": [
+            {
+              "text": "STI closed 5,422.16 on Fri 23 Oct, +6.63 pts (+0.12%) w/w. Closing high 5,437.99 (Wed 21 Oct), closing low 5,404.02 (Tue 20 Oct). Banks rallied on Wed (OCBC +1.2%, UOB +1.4%, DBS +0.3%) and fell on Tue, Thu and Fri.",
+              "source": "https://www.businesstoday.com.my/2026/10/25/sti-ends-week-higher-after-banking-rally-ai-concerns/"
+            },
+            {
+              "text": "23 Oct: STI touched 5,365.33 intraday, below the 9 Oct low of 5,369.49, then closed +0.13% as the AI/semis selloff eased. DBS −0.2% to S$74.44, OCBC −0.2% to S$29.00, UOB −0.7% to S$41.59. Market is waiting for the Fed on 28 Oct.",
+              "source": "https://www.businesstoday.com.my/2026/10/24/singapore-stocks-edge-higher-as-property-gains-offset-banking-weakness/"
+            },
+            {
+              "text": "Keppel DC REIT, the first S-REIT to report Q3: 9M DPU 8.57 Scts vs 7.67 a year earlier, distributable income S$228m vs S$195.3m. Units +~4% on 23 Oct. CapitaLand China Trust 9M gross revenue fell to RMB1.22bn from 1.28bn, yet units rose ~1%.",
+              "source": "https://sg.finance.yahoo.com/news/singapore-apos-shares-close-flat-094549791.html"
+            },
+            {
+              "text": "23 Oct closes: CICT S$2.30 (+2.2% on the day; 52w range 2.20–2.57), CLAR S$2.23 (+1.8%; 52w 2.14–2.91), Parkway Life REIT S$4.07 (52w 3.91–4.31). None of the three filed an announcement this week. CICT and CLAR 3Q updates are still due 29 Oct.",
+              "source": "https://www.halo-technologies.com/markets/shares/ses/c38u/"
+            },
+            {
+              "text": "SGX S$20.77 (−0.34% on 23 Oct); ES3 S$5.49 (+0.18%).",
+              "source": "https://growbeansprout.com/quote/S68.SI"
+            }
+          ],
+          "first_order": "A flat index hid a rotation. Banks drifted into their results (DBS 5 Nov, OCBC 6 Nov) and finished the week roughly unchanged. REITs bounced off their 52-week lows (CICT +3.1% w/w, CLAR +2.8%) on a strong first Q3 print (Keppel DC REIT) and a softer core CPI, which helps the lower-for-longer SG rates case. The 23 Oct intraday break below the 9 Oct low was bought back, so that support held on a closing basis but has been tested.",
+          "second_order": [
+            {
+              "sector": "S-REITs (CICT, CLAR)",
+              "effect": "Keppel DC REIT's 9M DPU +11.7% sets a high bar. If the 29 Oct CICT/CLAR updates show positive rental reversions and stable cost of debt with the SGS 10y at 2.34%, the bounce off the 2.20/2.14 lows has fundamental backing. If they don't, it fades.",
+              "direction": "up"
+            },
+            {
+              "sector": "SG banks' NIM",
+              "effect": "September core CPI at 2.0% (below the 2.3% consensus) lowers the odds of further MAS tightening, which keeps SORA and SGD-asset yields soft and weighs on Q3/Q4 NIM going into 5–6 Nov results",
+              "direction": "down"
+            },
+            {
+              "sector": "SGX",
+              "effect": "Turnover eased (S$1.8bn value on a day this week vs September's S$1.92bn DAV), so the volatility-driven volume tailwind is fading as the selloff calms",
+              "direction": "mixed"
+            },
+            {
+              "sector": "Wealth effect → COE demand",
+              "effect": "Bank shares are flat and still ~6–8% below their September highs, so household portfolios are not rising. That is neutral to a mild drag on Cat B bids, and so far it is not visible in COE bidding.",
+              "direction": "mixed"
+            }
+          ],
+          "lean": "mixed",
+          "strength": "weak",
+          "evidence": [
+            "STI 5,422.16, +0.12% w/w; week's closing high 5,437.99 is still below the ~5,474 100-day average cited last week",
+            "23 Oct intraday low 5,365.33 broke the 9 Oct low (5,369.49) but the index closed 57 pts above it",
+            "CICT 2.30 vs 2.23 and CLAR 2.23 vs 2.17 last brief; both are off their 52w lows (2.20 / 2.14)",
+            "Keppel DC REIT 9M distributable income +16.7% y/y (company results via Yahoo/Reuters)",
+            "ES3 5.49 vs 5.50 at last publish (−0.2%)",
+            "Against a bullish read: all three banks fell on three of five days; UOB −0.7% on 23 Oct"
+          ],
+          "consensus": [
+            "Fed decision on 28 Oct is the next macro driver for SG yields and REITs",
+            "REITs need lower long yields to re-rate; Q3 DPU prints are seen as the near-term catalyst",
+            "Bank valuations are seen as stretched (DBS ~2.9x book per last week's broker commentary); Q3 profits expected below Q2"
+          ],
+          "levels": [
+            {
+              "name": "Straits Times Index",
+              "ticker": "^STI",
+              "last": 5422.16,
+              "support": 5365.33,
+              "resistance": 5437.99,
+              "low_52w": 4372.64,
+              "high_52w": 5828.5,
+              "your_band": null
+            },
+            {
+              "name": "SPDR STI ETF",
+              "ticker": "ES3",
+              "last": 5.49,
+              "support": null,
+              "resistance": null,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": "4.00–4.20"
+            },
+            {
+              "name": "DBS",
+              "ticker": "D05",
+              "last": 74.44,
+              "support": 72.5,
+              "resistance": 76.75,
+              "low_52w": 52.6,
+              "high_52w": 79.05,
+              "your_band": "38–42"
+            },
+            {
+              "name": "OCBC",
+              "ticker": "O39",
+              "last": 29.0,
+              "support": 28.8,
+              "resistance": 30.8,
+              "low_52w": 16.72,
+              "high_52w": 32.57,
+              "your_band": "17–18.50"
+            },
+            {
+              "name": "UOB",
+              "ticker": "U11",
+              "last": 41.59,
+              "support": 40.25,
+              "resistance": 43.29,
+              "low_52w": null,
+              "high_52w": 45.15,
+              "your_band": "31–33"
+            },
+            {
+              "name": "CICT",
+              "ticker": "C38U",
+              "last": 2.3,
+              "support": 2.2,
+              "resistance": null,
+              "low_52w": 2.2,
+              "high_52w": 2.57,
+              "your_band": "2.10–2.25"
+            },
+            {
+              "name": "CapitaLand Ascendas REIT",
+              "ticker": "A17U",
+              "last": 2.23,
+              "support": 2.14,
+              "resistance": 2.25,
+              "low_52w": 2.14,
+              "high_52w": 2.91,
+              "your_band": "2.50–2.60"
+            },
+            {
+              "name": "Parkway Life REIT",
+              "ticker": "C2PU",
+              "last": 4.07,
+              "support": 3.91,
+              "resistance": null,
+              "low_52w": 3.91,
+              "high_52w": 4.31,
+              "your_band": "3.70–3.90"
+            },
+            {
+              "name": "SGX Group",
+              "ticker": "S68",
+              "last": 20.77,
+              "support": 20.41,
+              "resistance": 21.26,
+              "low_52w": null,
+              "high_52w": 25.69,
+              "your_band": "15.50–17.00"
+            }
+          ],
+          "flip_if": "Bullish if the STI closes above ~5,474 (100-day average) on breadth, the 29 Oct CICT/CLAR updates show positive reversions and falling cost of debt, and the 5–6 Nov bank results hold NIM guidance. Bearish if the STI closes below 5,365 (23 Oct intraday low / 9 Oct low zone), or banks guide NIM down on lower SORA.",
+          "benchmark": {
+            "name": "SPDR STI ETF",
+            "ticker": "ES3",
+            "price_at_publish": 5.49
+          },
+          "check_on": "2027-01-25",
+          "result": null
+        },
+        {
+          "theme": "COE & cars",
+          "region": "SG",
+          "headline": "Cat B COE rises 1.4% to S$131,901 as the Car Expo and the end of the EV incentive pull demand forward; Cat A tops Cat B again",
+          "what_happened": [
+            {
+              "text": "2nd October 2026 exercise (closed 21 Oct): Cat A S$132,004 (+2,003; 1,574 bids / 1,191 quota), Cat B S$131,901 (+1,801; 1,149 bids / 923 quota), Cat C S$92,200 (+311; 481/308), Cat D S$10,778 (−234; 611/539), Cat E S$135,790 (−1,210; 411/270). PQP: Cat A S$129,883, Cat B S$131,819. Cat A is the second-highest on record (record S$133,009 on 9 Sep).",
+              "source": "https://littlebigreddot.com/?p=29252"
+            },
+            {
+              "text": "Motorist gives Cat C as S$92,900 in its body text and table. LTA's own release was not fetched, so treat Cat C as unconfirmed between 92,200 and 92,900. Cat A closed above Cat B for the fourth time this year.",
+              "source": "https://www.motorist.sg/article/6500/october-2026-coe-results-2nd-bidding-cat-a-and-b-premiums-both-increased-as-cat-a-closed-higher-than-cat-b-for-the-fourth-time-this-year"
+            },
+            {
+              "text": "LTA urged buyers and dealers to bid prudently ahead of the Car Expo (24–25 Oct). The EV Early Adoption Incentive (45% of ARF, cap S$7,500) ends for EVs registered from 1 Jan 2027, cutting the maximum EV ARF saving from S$30,000 to S$20,000. Remaining 2026 rounds: 2–4 Nov, 16–18 Nov, 7–9 Dec, 21–23 Dec. LTA is quoted as saying 'We expect a short-term increase in COE prices' (secondary source).",
+              "source": "https://littlebigreddot.com/coe-car-expo-ev-incentive-ends-2027-buy-now-or-wait-22-october-2026/"
+            },
+            {
+              "text": "LTA consultation (opened 8 Oct, closes 11:59pm 2 Nov): merge Cat A and B into one car category with an OMV-based feebate. In the 3-band option, the bottom 35% by median OMV get a S$15,000 rebate and models above the 50th percentile pay a S$15,000 surcharge. The 5-band option uses ±S$7,500/±S$15,000 steps. Options for Cat E are to remove it or restrict it to cars. Findings due H1 2027; this is not yet policy.",
+              "source": "https://littlebigreddot.com/?p=28244"
+            },
+            {
+              "text": "LTA also flagged online initial bids, a review of bidding fees and dealer pricing shown ex-COE. It rejected pay-as-you-bid because ~3 in 4 successful 2025 Cat A/B bids were within 5% of the clearing price.",
+              "source": "https://news.theonlinecitizen.com/2026/10/21/coe-premiums-close-mixed-as-category-a-edges-above-category-b-again"
+            },
+            {
+              "text": "No Nov 2026–Jan 2027 quota announcement found as of 25 Oct. The last one was the LTA Aug–Oct 2026 release.",
+              "source": "https://www.lta.gov.sg/content/ltagov/en/newsroom/2026/7/news-releases/coe_quota_aug26-oct26.html"
+            },
+            {
+              "text": "September CPI: private transport inflation slowed to 7.1% y/y from 7.5% as car price increases moderated.",
+              "source": "https://www.asiaone.com/money/singapore-core-inflation-2026-september"
+            }
+          ],
+          "first_order": "Bullish here means premiums rising. Cat B bids exceeded quota by 24% (1,149 vs 923), and two demand pulls (the Car Expo, and EV buyers needing 2026 registration to keep the S$7,500 EEAI) point to firm or higher premiums through the four remaining 2026 rounds. The 3-month check (25 Jan 2027) lands after that deadline, though. The January 2027 rounds lose the EV pull-forward, and the Nov–Jan quota, still unannounced, is the main swing factor. Near-term pressure is up; the window to check_on is two-sided.",
+          "second_order": [
+            {
+              "sector": "EV makers/dealers (BYD distributors, Tesla)",
+              "effect": "The registration-date cut-off for the EEAI concentrates EV orders into Nov–Dec 2026 and creates an order air-pocket in Q1 2027",
+              "direction": "mixed"
+            },
+            {
+              "sector": "Higher-OMV (Cat B-type) car brands",
+              "effect": "A S$15,000 surcharge above the 50th OMV percentile, if adopted after H1 2027, raises the cost of premium cars relative to mass-market ones. Buyers may bring forward purchases before any change, which supports Cat B bids now.",
+              "direction": "mixed"
+            },
+            {
+              "sector": "SG CPI (private transport)",
+              "effect": "COE rises of ~1.4% per round keep private transport inflation elevated (7.1%) even as car list-price increases slow. Private transport sits in headline CPI, not core.",
+              "direction": "up"
+            },
+            {
+              "sector": "Car-financing lenders (banks, finance companies)",
+              "effect": "Premiums above S$130K plus loan-to-value caps raise the down-payment needed, which caps loan volumes even as ticket sizes stay high",
+              "direction": "mixed"
+            },
+            {
+              "sector": "Cat E / commercial users",
+              "effect": "Removing or restricting Cat E would end its use as a Cat B overflow channel; Cat E S$135,790 is still the highest premium of all categories",
+              "direction": "mixed"
+            }
+          ],
+          "lean": "mixed",
+          "strength": "weak",
+          "evidence": [
+            "Cat B S$131,901, +1.38% vs S$130,100 at last brief; bids/quota 1.24x",
+            "Cat A S$132,004, within S$1,005 of its 9 Sep record; Cat A has exceeded Cat B in four rounds this year",
+            "EEAI ends for EVs registered from 1 Jan 2027, so EV demand is time-boxed into the four remaining 2026 rounds",
+            "Cat B 9 Sep high S$135,001 is the nearest ceiling; Cat B is still below its Oct 2023 all-time high of S$150,001",
+            "Against higher by late Jan: Cat E −0.9% and Cat D −2.1%; private transport inflation slowing; Nov–Jan quota not yet known",
+            "S$80K gate: Cat B would need to fall ~39%. None of Norman's gates triggered this week: oil elevated, MAS held rather than tightened, bids still exceed quota, no dealer pullback (dealers reported bidding aggressively for share), quota not announced, STI flat, Q3 retrenchment data not out, Q1 2027 tariff not announced"
+          ],
+          "consensus": [
+            "Motorist commentary expects COE premiums to peak by November 2026 and dip afterwards (author's prediction; quota described as flattened by LTA's deregistration-redistribution mechanism)",
+            "Dealers and commentators link the Cat A/B convergence to EVs engineered to fit Cat A power limits, which is LTA's stated rationale for the merger",
+            "Opposition MP Jamus Lim welcomed the merger proposal as similar to his 2025 proposal (political reaction only)"
+          ],
+          "levels": [
+            {
+              "name": "COE Cat B premium (S$)",
+              "ticker": "COE-CATB",
+              "last": 131901,
+              "support": 130100,
+              "resistance": 135001,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": "~80,000 (Cat B thesis gate)"
+            },
+            {
+              "name": "COE Cat A premium (S$)",
+              "ticker": "COE-CATA",
+              "last": 132004,
+              "support": 130001,
+              "resistance": 133009,
+              "low_52w": null,
+              "high_52w": 133009,
+              "your_band": null
+            },
+            {
+              "name": "COE Cat E premium (S$)",
+              "ticker": "COE-CATE",
+              "last": 135790,
+              "support": null,
+              "resistance": 137000,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            },
+            {
+              "name": "Cat B Prevailing Quota Premium (S$)",
+              "ticker": "PQP-CATB",
+              "last": 131819,
+              "support": null,
+              "resistance": null,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            }
+          ],
+          "flip_if": "Bullish (premiums rising) if the Nov–Jan quota cuts Cat B certificates per round below ~923, or the 2–4 Nov round clears above S$135,001 with bids/quota above ~1.3x. Bearish (premiums falling) if the quota rises materially, Cat B bids/quota falls toward 1.1x after the Car Expo, January 2027 rounds show a post-EEAI drop, or LTA signals early implementation of a surcharge on high-OMV cars. Toward the S$80K thesis: needs a quota jump plus a demand shock (retrenchments, MAS tightening, dealer pullback).",
+          "benchmark": {
+            "name": "COE Cat B premium (S$)",
+            "ticker": "COE-CATB",
+            "price_at_publish": 131901
+          },
+          "check_on": "2027-01-25",
+          "result": null
+        },
+        {
+          "theme": "Energy",
+          "region": "Global",
+          "headline": "Brent jumps 6% to US$116.72, highest since late April, as Houthi strikes on Saudi Arabia join the Hormuz attacks; talks stall",
+          "what_happened": [
+            {
+              "text": "Brent settled US$116.72 on Fri 23 Oct (+US$3.55 on the day, about +6% w/w, highest settle since 29 Apr); WTI US$103.27 (+3.8% on the day, +2.3% w/w). It traded around US$108–111 on 20–22 Oct before the Saudi strikes.",
+              "source": "https://srnnews.com/oil-little-changed-as-supply-concern-lingers-amid-houthi-attacks-on-saudi-arabia/"
+            },
+            {
+              "text": "The Houthis hit Saudi targets, including energy infrastructure, an oil field and an airport. Aramco told staff to leave its Dhahran HQ. The US ordered non-emergency personnel out of Saudi Arabia. No lost Saudi barrels reported; Aramco says the East-West line is at its 7m b/d maximum.",
+              "source": "https://oilprice.com/Latest-Energy-News/World-News/Oil-Prices-Surge-Above-111-as-Houthis-Strike-Saudi-Targets.html"
+            },
+            {
+              "text": "Iran's IRGC claimed seven tankers hit in or near Hormuz (unverified by AP; Trump called it fabricated). UKMTO logged 32 attacks around the Arabian Peninsula in October so far, against 16 in all of September. Flow data conflict: Kpler via Bloomberg has Gulf crude flows at 24.6m b/d in the week to 18 Oct (Vortexa 18m), while IMF PortWatch logged only 4 Hormuz transits on 18 Oct against a pre-crisis 85 a day.",
+              "source": "https://gcaptain.com/middle-east-oil-flows-near-prewar-levels-defy-hormuz-attacks/"
+            },
+            {
+              "text": "US–Iran: no formal talks. Iran's FM Araqchi says he has 'no trust whatsoever' in US peace aims; President Pezeshkian says talks cannot proceed while the US blockade stays. Markets are pricing possible renewed US strikes before the 3 Nov midterms.",
+              "source": "https://oilprice.com/Latest-Energy-News/World-News/Oil-Prices-Surge-Above-111-as-Houthis-Strike-Saudi-Targets.html"
+            },
+            {
+              "text": "EIA, week to 16 Oct: commercial crude −3.1mb to 412.5mb (about 3% below the 5-yr average); gasoline −3.0mb (5% below); distillates +1.7mb to 104.3mb (9% below); SPR 282.7mb; refinery runs 93.4%.",
+              "source": "https://www.rigzone.com/news/usa_crude_oil_stocks_drop_3mm_barrels_wow-22-oct-2026-184911-article/"
+            },
+            {
+              "text": "Stock releases are small so far. DOE authorised an SPR exchange of only up to 400k bbl for Phillips 66 Lake Charles; the SPR is at its lowest since 1982. Germany's EBV made the first G7-agreed release. The US eased some Russia sanctions in exchange for more Russian diesel: 2.3mb this month, possibly 7.6mb a month later.",
+              "source": "https://energynow.com/2026/10/oil-prices-retreat-from-five-month-highs-as-russian-sanctions-relief-offsets-middle-east-supply-fears/"
+            },
+            {
+              "text": "Asian spot LNG topped US$30/MMBtu on 20 Oct, the first time since Dec 2022, after a tanker strike in the Gulf of Aden. North Asia spot was US$29.30 in the week to 16 Oct, against US$10.40 at end-February. EU storage is 74.6% full against a ~89% seasonal norm. Qatar told buyers its force majeure runs through November, and Edison's Italian cargoes are suspended to early December.",
+              "source": "https://oilprice.com/Latest-Energy-News/World-News/Asian-LNG-Prices-Surge-Past-30-as-Middle-East-Shipping-Risks-Escalate.html"
+            },
+            {
+              "text": "OPEC+ (7 members) held November quotas flat at 31.01m b/d on 4 Oct; it meets next on 1 Nov. The quotas are mostly moot: Saudi output was about 8m b/d in September against a 10.478m quota.",
+              "source": "https://nairametrics.com/2026/10/05/opec-keeps-november-oil-production-unchanged-at-31-01-million-bpd/"
+            },
+            {
+              "text": "Majors' Q3 dates: Shell 29 Oct (07:00 GMT); ExxonMobil 30 Oct (05:30 CT); Chevron call 30 Oct (11:00 ET, secondary source); BP reportedly 30 Oct (secondary source, not confirmed by BP).",
+              "source": "https://investor.exxonmobil.com/company-information/press-releases/detail/1212/exxonmobil-to-release-third-quarter-2026-financial-results"
+            },
+            {
+              "text": "XLE closed US$69.33 on 23 Oct (+2.6% on the day), a new 52-week high (intraday US$69.72).",
+              "source": "https://markets.financialcontent.com/wss/quote/ny:xle"
+            }
+          ],
+          "first_order": "The risk has spread from Hormuz to Saudi Arabia, the main bypass (East-West line to Yanbu, then past the Houthi-contested Bab al-Mandab), so the Hormuz premium now sits on top of a Saudi-infrastructure premium. Inventories are still drawing: US crude and gasoline fell, distillates are 9% below average and the SPR is at a 1982 low, so policy buffers are thin. Majors go into Q3 prints (29–30 Oct) with Brent about 6% higher than a week ago and refining margins already flagged as record. The offsets are real but smaller: Gulf flows may be recovering (Kpler), Russian diesel is coming via the sanctions waiver, and the US administration has a midterm incentive to push prices down.",
+          "second_order": [
+            {
+              "sector": "Airlines (SIA)",
+              "effect": "Jet fuel prices track gasoil, and distillates are tight (US stocks 9% below average). Brent at US$116 lifts SIA's unhedged fuel cost. Higher fuel surcharges, on top of SG's green jet-fuel levy on flights from 1 Oct, raise fares and soften price-sensitive leisure demand. Houthi strikes on a Saudi airport add to Middle East routing risk.",
+              "direction": "down"
+            },
+            {
+              "sector": "Asian LNG buyers → power tariffs",
+              "effect": "JKM above US$30 plus Brent-linked term LNG (Japan, and SG's Brent-indexed gas) feeds into Q1 2027 electricity tariffs in Japan, Korea and Singapore. Qatar's force majeure through November removes the winter relief valve.",
+              "direction": "up"
+            },
+            {
+              "sector": "Trucking / freight",
+              "effect": "Distillate stocks are 9% below the 5-yr average heading into winter, so diesel and fuel surcharges rise. Carriers pass most of it on with a lag, while shippers' (and staples') logistics costs go up.",
+              "direction": "down"
+            },
+            {
+              "sector": "Refiners",
+              "effect": "Product inventories are tight, Kuwaiti fuel output is still impaired and Russian refineries are under drone attack, so cracks stay high. Russian diesel to the US is the main offset.",
+              "direction": "up"
+            },
+            {
+              "sector": "Staples' input costs",
+              "effect": "Energy-linked packaging, freight and refrigeration costs hit consumer-goods gross margins with a 1–2 quarter lag. This week's Brent jump extends the squeeze into Q1 2027 costs.",
+              "direction": "down"
+            },
+            {
+              "sector": "Rates / Fed (28 Oct)",
+              "effect": "US gasoline stocks are 5% below average, so pump prices keep headline CPI elevated into the Fed decision. That keeps pressure on long-duration assets.",
+              "direction": "down"
+            }
+          ],
+          "lean": "bullish",
+          "strength": "moderate",
+          "evidence": [
+            "Brent settle US$116.72 on 23 Oct vs US$109.86 on 16 Oct (+6.2%); WTI US$103.27 vs US$101.41 (Reuters via SRN)",
+            "XLE US$69.33, a new 52-week high, +1.6% vs last brief's US$68.24 (financialcontent official close)",
+            "UKMTO: 32 attacks around the Arabian Peninsula in October to date vs 16 in all of September (Bloomberg/gCaptain)",
+            "EIA WPSR: crude −3.1mb, gasoline −3.0mb, distillates 9% below the 5-yr average; SPR 282.7mb",
+            "Aramco evacuated Dhahran HQ; US ordered non-emergency staff out of Saudi Arabia",
+            "Iran's president says no talks while the US blockade stays (oilprice.com)",
+            "Against: Kpler shows Gulf crude flows at 24.6m b/d in the week to 18 Oct, above the pre-war 18.5m (Vortexa 18m), but IMF PortWatch logged 4 transits on 18 Oct. The data conflict, so treat flow recovery as unverified",
+            "Against: no Saudi barrels lost so far; IEA demand cut (−2.6 mb/d for 2026, last week) still stands"
+          ],
+          "consensus": [
+            "HSBC's stalemate scenario points to Brent around US$120 (cited by FinanceFeeds)",
+            "Goldman: Brent stays above US$100 through 2026 if the Hormuz closure lasts another month",
+            "Market sees the 3 Nov US midterms as a reason Washington will push for lower pump prices (SPR, Russia diesel deal)",
+            "Q3 is widely billed as a record quarter for Big Oil refining earnings, possibly the peak"
+          ],
+          "levels": [
+            {
+              "name": "Brent front-month (US$/bbl); 52w range from growbeansprout, whose spot quote was stale",
+              "ticker": "BZ",
+              "last": 116.72,
+              "support": 108.82,
+              "resistance": 117.23,
+              "low_52w": 58.72,
+              "high_52w": 126.1,
+              "your_band": null
+            },
+            {
+              "name": "WTI front-month (US$/bbl)",
+              "ticker": "CL",
+              "last": 103.27,
+              "support": 98.98,
+              "resistance": null,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            },
+            {
+              "name": "Energy Select Sector SPDR (close 23 Oct)",
+              "ticker": "XLE",
+              "last": 69.33,
+              "support": 66.28,
+              "resistance": 69.72,
+              "low_52w": 43.19,
+              "high_52w": 69.72,
+              "your_band": null
+            },
+            {
+              "name": "North Asia spot LNG (US$/MMBtu, week to 16 Oct; >30 reported 20 Oct)",
+              "ticker": "JKM",
+              "last": 29.3,
+              "support": null,
+              "resistance": 30.0,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            }
+          ],
+          "flip_if": "Any of these would flip the read: a verified Hormuz reopening, with PortWatch transits recovering and not just Kpler estimates; US–Iran talks restarting with the blockade eased; Saudi air defences holding and Brent back below ~US$108 (the pre-strike level); OPEC+ (1 Nov) with real spare barrels; or Q3 prints (Shell 29 Oct, Exxon/Chevron 30 Oct) guiding to lower Q4 refining margins or buybacks. XLE closing back below ~US$66.28 would also signal the lean is wrong.",
+          "benchmark": {
+            "name": "Energy Select Sector SPDR",
+            "ticker": "XLE",
+            "price_at_publish": 69.33
+          },
+          "check_on": "2027-01-25",
+          "result": null
+        },
+        {
+          "theme": "Energy",
+          "region": "SG",
+          "headline": "Fuel window for the Q1 2027 tariff now runs at Brent ~US$109–117 and LNG ~US$30; SG renews its Qatar LNG MOU and names three biomethane importers",
+          "what_happened": [
+            {
+              "text": "EDB appointed Keppel Energy, Sembcorp Utilities and Tuas Power as aggregators in a 15-year, 300MW biomethane import sandbox (23 Oct). First supply is due by end-2028, aimed at data centres and industry. DPM Gan Kim Yong announced it with S$143m for industrial decarbonisation.",
+              "source": "https://technode.global/2026/10/23/singapore-picks-keppel-sembcorp-tuas-power-for-southeast-asias-first-biomethane-import-pilot/"
+            },
+            {
+              "text": "Keppel's share is up to 120MW for 15 years, 'not expected to have a material impact' on current-year EPS. Its Connectivity arm was provisionally awarded 50MW of new data-centre capacity. The 3Q business update is on 29 Oct.",
+              "source": "https://www.ad-hoc-news.de/boerse/news/nebenwerte/keppel-joins-120-mw-biomethane-sandbox-maybank-targets-keppel-stock-at-sgd-13-00/70407442"
+            },
+            {
+              "text": "PM Wong and Qatar's Emir (19 Oct, Doha) welcomed renewal of the QatarEnergy–Singapore MOU on LNG and low-carbon tech 'to support stable LNG procurement'. No volumes or terms were disclosed. Qatar's force majeure still runs through November.",
+              "source": "https://mothership.sg/2026/10/spore-qatar-work-towards-upgrading-relations/"
+            },
+            {
+              "text": "EMC/EMA data: monthly average USEP hit S$332.5/MWh in August 2026 (July 245.2, Feb 132.9), the latest month published. Wholesale power is far above the level implied by the Q4 household tariff cut.",
+              "source": "https://www.ema.gov.sg/content/dam/corporate/resources/statistics/files/pdf/Average%20Monthly%20USEP%20(as%20of%20Aug%2026).pdf.coredownload.pdf"
+            },
+            {
+              "text": "Q4 2026 household tariff is 28.59 c/kWh (−10.4%). The Q1 2027 tariff is due around end-December. No new SP Group statement this week.",
+              "source": "https://www.thestar.com.my/aseanplus/aseanplus-news/2026/09/30/electricity-tariff-for-singapore-households-to-fall-by-104-in-fourth-quarter-of-2026"
+            },
+            {
+              "text": "Sembcorp closed S$6.01 on 23 Oct (S$6.00 on 20 Oct; day range 5.88–6.04), up from S$5.93 at last brief. 52-week range S$5.22–7.20.",
+              "source": "https://growbeansprout.com/quote/U96.SI"
+            }
+          ],
+          "first_order": "The fuel-cost window for the Q1 2027 tariff (roughly October to mid-December forward prices) is running well above the window behind the Q4 cut: Brent US$109–117 and Asian LNG at US$29–30. A Q1 tariff increase is the likely direction; this is an inference, not an announcement. For Sembcorp and Keppel, high wholesale prices (USEP S$332/MWh in August) support merchant generation spreads, though gencos mostly pass fuel through on contracted volumes. The biomethane roles add future optionality only, with nothing material before 2028.",
+          "second_order": [
+            {
+              "sector": "SG households / CPI",
+              "effect": "A Q1 2027 tariff rise would reverse the Q4 cut and push electricity back up in headline and core CPI from January",
+              "direction": "up"
+            },
+            {
+              "sector": "SG gencos (Sembcorp, Keppel, Tuas Power)",
+              "effect": "Elevated USEP widens spreads on uncontracted capacity. Retail-arm margins get squeezed if fixed-price contracts were signed before the spike.",
+              "direction": "mixed"
+            },
+            {
+              "sector": "Data centres in SG",
+              "effect": "Power is their largest operating cost. Higher tariffs flow into lease renewals, and biomethane offtake adds a green premium option from 2028.",
+              "direction": "mixed"
+            },
+            {
+              "sector": "SG food retail (Sheng Siong)",
+              "effect": "Higher electricity for refrigerated stores and diesel for logistics raises opex into H1 2027",
+              "direction": "down"
+            }
+          ],
+          "lean": "mixed",
+          "strength": "weak",
+          "evidence": [
+            "USEP monthly average S$332.5/MWh in Aug 2026 vs S$132.9 in Feb (EMC via EMA)",
+            "Brent US$116.72 and Asian spot LNG >US$30 inside the Q1 2027 tariff window",
+            "U96 S$6.01, +1.3% vs last brief's S$5.93; BN4 S$10.00, −1.0% vs S$10.10",
+            "Keppel says the biomethane mandate is not material to current-year EPS (company statement via secondary source)",
+            "QatarEnergy MOU renewed, but no volumes, and Qatar force majeure runs through November"
+          ],
+          "consensus": [
+            "Analysts expect a Q1 2027 tariff increase if oil stays above ~US$100",
+            "Sell-side coverage of Sembcorp (DBS, OCBC, Phillip, Maybank) and Keppel (Maybank, 22 Oct) remains positive",
+            "Sembcorp is seen as a defensive, dividend-yielding utility (~5% trailing yield) with growing renewables exposure"
+          ],
+          "levels": [
+            {
+              "name": "Sembcorp Industries (close 23 Oct)",
+              "ticker": "U96",
+              "last": 6.01,
+              "support": 5.88,
+              "resistance": 6.08,
+              "low_52w": 5.22,
+              "high_52w": 7.2,
+              "your_band": null
+            },
+            {
+              "name": "Keppel (close 23 Oct; 52w range from secondary source)",
+              "ticker": "BN4",
+              "last": 10.0,
+              "support": null,
+              "resistance": 10.52,
+              "low_52w": 9.7,
+              "high_52w": 13.25,
+              "your_band": null
+            },
+            {
+              "name": "SP household tariff Q4 2026 (c/kWh)",
+              "ticker": "SP-TARIFF",
+              "last": 28.59,
+              "support": null,
+              "resistance": null,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            }
+          ],
+          "flip_if": "Keppel's 3Q update (29 Oct) or any Sembcorp disclosure showing genco/retail margin compression would turn the read bearish; strong merchant spreads or contracted data-centre power growth would turn it bullish. Brent falling below ~US$95 before mid-December would cap the Q1 tariff rise. Qatar resuming SG cargoes after November would ease LNG costs.",
+          "benchmark": {
+            "name": "Sembcorp Industries",
+            "ticker": "U96",
+            "price_at_publish": 6.01
+          },
+          "check_on": "2027-01-25",
+          "result": null
+        },
+        {
+          "theme": "Staples",
+          "region": "Global",
+          "headline": "P&G and Nestlé pass the volume test and hold guidance, but P&G raises its commodity cost hit to $1.4bn and loses 150bp of gross margin",
+          "what_happened": [
+            {
+              "text": "P&G FY27 Q1 (22 Oct): net sales +4% to $23.3bn and organic +4%, made up of volume +2.4%, mix +1.1% and price only +0.4%. Core EPS $2.00 (+1%). Core gross margin fell 150bp, with commodities costing 140bp, offset by 120bp of productivity savings and 20bp of pricing. Organic growth guidance (1–3%) and core EPS guidance ($6.89–7.11) held; all-in sales guidance raised to 2–4% to include the Thorne acquisition.",
+              "source": "https://www.sec.gov/Archives/edgar/data/0000080424/000008042426000250/fy2627q1jas8-kexhibit991.htm"
+            },
+            {
+              "text": "P&G raised its after-tax FY27 commodity cost estimate from about $1.0bn (29 Jul) to about $1.4bn and doubled its interest-cost estimate. Total headwinds are now $0.79 per share (was $0.56). The slides say cost headwinds will increase over the next few quarters.",
+              "source": "https://www.stocktitan.net/articles/pg-q1-fiscal-2027-earnings-prices-flat-as-costs-climb"
+            },
+            {
+              "text": "PG rose about 6% intraday on 22 Oct, its biggest gain since 2020, as investors rotated from tech into defensives. It closed at 165.59, then fell back to 161.02 on 23 Oct.",
+              "source": "https://247wallst.com/investing/2026/10/22/procter-gamble-jumps-6-as-earnings-beat-draws-defensive-buyers-johnson-johnson-rises-3-coca-cola-ticks-up/"
+            },
+            {
+              "text": "Nestlé 9M (22 Oct): Q3 organic growth 4.0%, with real internal growth (RIG) 2.8% and pricing 1.1%; 9M organic 3.7% (RIG 1.9%, pricing 1.8%). FY26 outlook kept: 3–4% organic, a higher underlying trading operating margin, and an H2 margin broadly similar to H1. Coffee pricing continues to ease.",
+              "source": "https://www.nestle.com/sites/default/files/2026-10/nine-month-sales-press-release-2026-en.pdf"
+            },
+            {
+              "text": "Unilever's Q3 trading statement is on 28 Oct, not this week. The next FAO Food Price Index is due 6 Nov; September stood at 136.0, the highest since Nov 2022.",
+              "source": "https://www-vercel.unilever.com/investors/results-events/upcoming-results/"
+            },
+            {
+              "text": "XLP closed at 88.26 on 23 Oct (+3.31% on 22 Oct, −1.92% on 23 Oct), up 0.7% on the week. WMT closed at 119.89 (16 Oct: 118.81).",
+              "source": "https://www.marketbeat.com/stocks/NYSEARCA/XLP/chart/"
+            }
+          ],
+          "first_order": "The volume half of the test passed: P&G volume +2.4% and Nestlé Q3 RIG +2.8%, both with guidance held. The margin half failed: P&G's gross margin fell 150bp, its cost estimate rose 40%, and it captured only 0.4% of price. Branded makers are buying volume by not passing costs on, so earnings growth is flat (P&G core EPS +1%) even as sales grow. Haven flows from the AI selloff are lifting the sector's prices more than its fundamentals.",
+          "second_order": [
+            {
+              "sector": "Branded household and personal care (PG, CL, KMB)",
+              "effect": "Oil-linked resins, pulp and freight push up input costs, and cost guidance has been raised ($1.0bn → $1.4bn at P&G). Price increases running at only 0.4% squeeze gross margins. Either price increases come in H1 2027 and test volumes, or EPS guidance comes under pressure.",
+              "direction": "down"
+            },
+            {
+              "sector": "Packaged food (NESN)",
+              "effect": "Coffee pricing is easing, so volume (RIG) does more of the work. Margins stay flat in H2, and the FAO cereals and sugar spike shows up in costs with a lag.",
+              "direction": "mixed"
+            },
+            {
+              "sector": "Value retail (WMT, COST)",
+              "effect": "Branded makers are holding prices to defend volume, which supports retailers' unit sales and private-label negotiating leverage. WMT is steady near 120.",
+              "direction": "up"
+            },
+            {
+              "sector": "Defensive equity allocation",
+              "effect": "Each AI or semis selloff (SOX −6.7% on 22 Oct) pushes money into staples. That support depends on tech volatility, not on earnings.",
+              "direction": "mixed"
+            }
+          ],
+          "lean": "mixed",
+          "strength": "moderate",
+          "evidence": [
+            "P&G 8-K: volume +2.4%, price +0.4%, core gross margin −150bp, commodity drag 140bp, core EPS guidance held",
+            "P&G FY27 after-tax commodity headwind raised to ~$1.4bn from ~$1.0bn; management expects headwinds to increase",
+            "Nestlé Q3 RIG 2.8%, up from 1.8% in Q2; FY26 guidance kept; pricing slowing to 1.1%",
+            "XLP 88.26, +0.7% w/w and 2.1% below its 52w high of 90.14; PG 161.02 after reaching 166.85 intraday on 22 Oct"
+          ],
+          "consensus": [
+            "Staples are where money goes to hide from AI and semis volatility",
+            "P&G's beat shows the US consumer is holding up despite 3.7% CPI",
+            "Margin pressure from commodities and energy is a 2027 problem, once cost hedges roll off"
+          ],
+          "levels": [
+            {
+              "name": "Consumer Staples Select SPDR",
+              "ticker": "XLP",
+              "last": 88.26,
+              "support": 87.11,
+              "resistance": 90.14,
+              "low_52w": 75.16,
+              "high_52w": 90.14,
+              "your_band": null
+            },
+            {
+              "name": "Procter & Gamble",
+              "ticker": "PG",
+              "last": 161.02,
+              "support": 156.84,
+              "resistance": 166.85,
+              "low_52w": 137.62,
+              "high_52w": 167.25,
+              "your_band": null
+            },
+            {
+              "name": "Walmart",
+              "ticker": "WMT",
+              "last": 119.89,
+              "support": 116.63,
+              "resistance": 122.4,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            }
+          ],
+          "flip_if": "Bullish if Unilever (28 Oct) also shows volume-led growth with a stable gross margin, and the 6 Nov FAO index eases from 136. Bearish if Unilever or Colgate cut margin guidance, if P&G-style cost increases spread to food companies (FAO stays above 135 with Brent above $110), or if tech stabilises and the defensive rotation reverses (XLP below 87.1).",
+          "benchmark": {
+            "name": "Consumer Staples Select SPDR",
+            "ticker": "XLP",
+            "price_at_publish": 88.26
+          },
+          "check_on": "2027-01-25",
+          "result": null
+        },
+        {
+          "theme": "Staples",
+          "region": "SG",
+          "headline": "SG food inflation edges up to 2.4% as core eases to 2.0%; Wilmar falls 4% on a first-ever NEA haze notice to Singapore firms",
+          "what_happened": [
+            {
+              "text": "September CPI (23 Oct): headline 2.2% (Aug 2.3%), core 2.0% (Aug 2.2%), food 2.4% y/y (Aug 2.3%). Electricity and gas +8.7%, private transport +7.1%. MAS/MTI expect higher energy prices to push up regional food prices, core to stay slightly elevated in coming quarters and ease from mid-2027; risks tilted up.",
+              "source": "https://www.asiaone.com/money/singapore-core-inflation-2026-september"
+            },
+            {
+              "text": "NEA (23 Oct) served notices under the Transboundary Haze Pollution Act (THPA) on 10 Singapore-registered companies including Wilmar, the first such use against SG firms. The notices seek documents on Singapore and Indonesian affiliates, land concession locations and fire-prevention measures.",
+              "source": "https://www.businesstoday.com.my/2026/10/23/singapore-takes-action-on-10-companies-including-wilmar-and-tsh-as-haze-probe-widens/"
+            },
+            {
+              "text": "Wilmar told SGX on 24 Oct it will comply and is preparing the documents. Under the THPA, a conviction carries fines of up to S$100k a day, capped at S$2m.",
+              "source": "https://www.malaymail.com/news/singapore/2026/10/24/wilmar-bumitama-and-first-resources-fall-in-line-on-singapores-haze-probe-seven-still-silent/240462"
+            },
+            {
+              "text": "Wilmar closed at S$3.34 on 23 Oct (day range 3.31–3.37), down from about 3.48 on 15 Oct. TipRanks lists Q3 results on 28 Oct (not confirmed from an SGX filing).",
+              "source": "https://www.fool.com/quote/sgx/f34/"
+            },
+            {
+              "text": "Sheng Siong closed at S$2.82 on 23 Oct (−1.74%), just below last week's 2.83 support. ThaiBev closed at 0.44 (+2.35%) on about 35m shares, roughly 5–10x recent volume; no news was found to explain it. No DFI Retail news was found.",
+              "source": "https://growbeansprout.com/quote/OV8.SI"
+            }
+          ],
+          "first_order": "Food inflation has not rolled over: it edged up to 2.4%. That meets neither half of last week's flip condition. The easing in core comes from services and retail goods, not food or utilities. For grocers this means steady nominal basket growth while utility costs (+8.7%) stay high. Wilmar has a new governance overhang just before its Q3 print.",
+          "second_order": [
+            {
+              "sector": "SG grocers (Sheng Siong, DFI)",
+              "effect": "Food CPI at 2.4% lifts the value of each basket. Brent at about $117 feeds into SG electricity tariffs with a lag, keeping store operating costs high. Margins depend on passing through costs that are already showing in the 8.7% energy CPI.",
+              "direction": "mixed"
+            },
+            {
+              "sector": "Wilmar / SG-listed palm planters (First Resources, Bumitama)",
+              "effect": "THPA disclosure demands raise ESG and financing-cost risk and could put off ESG-screened investors. The direct fine cap of S$2m is immaterial; the risk is reputational, tied to concession disclosure.",
+              "direction": "down"
+            },
+            {
+              "sector": "SG household budgets → discretionary spending",
+              "effect": "Food (2.4%), utilities (8.7%) and private transport (7.1%) still crowd out discretionary spending even as headline inflation eases.",
+              "direction": "down"
+            },
+            {
+              "sector": "Imported food costs",
+              "effect": "MAS expects energy-driven increases in regional food prices; the 6 Nov FAO print is the next input.",
+              "direction": "up"
+            }
+          ],
+          "lean": "mixed",
+          "strength": "weak",
+          "evidence": [
+            "SingStat/MAS Sept CPI: food 2.4% (from 2.3%), core 2.0% (from 2.2%), electricity and gas 8.7%",
+            "NEA THPA notice to Wilmar (23 Oct); Wilmar SGX filing says it will comply",
+            "F34 3.34, down ~4% from 3.48 last week; OV8 2.82 vs 2.84, marginally below 2.83 support",
+            "Y92 0.44 on a volume spike with no news found"
+          ],
+          "consensus": [
+            "Sheng Siong is seen as an inflation-resilient defensive name",
+            "Wilmar is cheap but held back by ESG and governance concerns; analyst consensus Hold (TipRanks)",
+            "SG inflation has peaked on core, with food and energy the remaining risk"
+          ],
+          "levels": [
+            {
+              "name": "Sheng Siong",
+              "ticker": "OV8",
+              "last": 2.82,
+              "support": null,
+              "resistance": null,
+              "low_52w": null,
+              "high_52w": 3.46,
+              "your_band": null
+            },
+            {
+              "name": "Wilmar International",
+              "ticker": "F34",
+              "last": 3.34,
+              "support": 3.31,
+              "resistance": 3.52,
+              "low_52w": 2.97,
+              "high_52w": 4.02,
+              "your_band": null
+            },
+            {
+              "name": "Thai Beverage",
+              "ticker": "Y92",
+              "last": 0.44,
+              "support": 0.42,
+              "resistance": 0.45,
+              "low_52w": 0.41,
+              "high_52w": 0.5,
+              "your_band": null
+            }
+          ],
+          "flip_if": "Bullish for SG staples if Sheng Siong's Q3 update (early Nov) shows a stable gross margin despite utility costs, and Wilmar's Q3 (~28 Oct) shows merchandising strength with no escalation of the haze probe. Bearish if NEA moves from document requests to an investigation or charges against Wilmar, or if October food CPI tops 2.5% alongside a Q1 2027 electricity tariff increase.",
+          "benchmark": {
+            "name": "Sheng Siong",
+            "ticker": "OV8",
+            "price_at_publish": 2.82
+          },
+          "check_on": "2027-01-25",
+          "result": null
+        },
+        {
+          "theme": "Macro",
+          "region": "Global",
+          "headline": "October hike odds collapse to ~7% and the 10y briefly closes below 5% on the AI selloff, but December hike is still ~78% priced and Brent is at $117",
+          "what_happened": [
+            {
+              "text": "Fed H.15: 10y at 5.15/5.12/5.13 on 19–21 Oct, then 4.96 on 22 Oct, the first close below 5% since 22 Sep. 2y at 4.77/4.79/4.81, then 4.65. Effective fed funds 3.88%.",
+              "source": "https://www.federalreserve.gov/releases/h15/"
+            },
+            {
+              "text": "The 22 Oct bond rally came with an AI selloff: Meta −7% after earnings on a plan to fund AI with non-voting stock, SOX −6.7%, Nasdaq −2.6%. CME odds of an October hike fell to 7.2% (from 27.7% a week earlier and 55.4% a month earlier); December odds eased from about 86% to about 78%.",
+              "source": "https://247wallst.com/investing/2026/10/23/the-10-year-yield-just-fell-below-5-as-investors-fled-ai-stocks/"
+            },
+            {
+              "text": "Week to 23 Oct (secondary source): 10y about 5.00% (−8bp), 2y 4.69% (−2bp), 2s10s +31bp (from +37bp), DXY 101.75 (−0.2%). Markets still price a December hike.",
+              "source": "https://finance.yahoo.com/markets/currencies/articles/stocktwits-weekly-spread-shaped-treasury-010033087.html"
+            },
+            {
+              "text": "Initial jobless claims 194k (week to 17 Oct; 4-week average 197,750), lowest since July; continuing claims 1.728m.",
+              "source": "https://www.dol.gov/ui/data.pdf"
+            },
+            {
+              "text": "Reuters poll: 94 of 100 economists expect a hold at 3.75–4.00% on 28 Oct, and all 100 expect a December hike. Q3 GDP (consensus ~3.2%) and September PCE are due 29 Oct. Brent settled at $116.72 on Friday.",
+              "source": "https://financefeeds.com/fed-decision-wednesday-94-of-100-economists-expect-a-hold-and-all-100-a-december-hike-what-the-statement-has-to-say-for-gold-oil-and-bitcoin/"
+            },
+            {
+              "text": "Oil rose more than 2% on 22 Oct after an NYT report that the US and Israel are weighing renewed strikes on Iran after the midterms.",
+              "source": "https://www.briefs.co/news/treasuries-rally-as-stocks-sell-off-and-oil-jumps/"
+            },
+            {
+              "text": "UMich sentiment (Oct, revised 23 Oct) 48.0, near the record low set in May; 1y inflation expectations 4.7%, long-run 3.5%.",
+              "source": "https://tradingeconomics.com/united-states/consumer-confidence/news/590907"
+            }
+          ],
+          "first_order": "This is the second week in a row that haven demand has beaten inflation data for long bonds: TLT rose 1.6% to 81.34, against the bearish lean. The fundamentals still argue for higher policy rates: CPI 3.7%, claims at 194k, Q3 GDP tracking about 3%, Brent at $117 and rising inflation expectations. The October meeting is now a hold, with the focus on December and any dissents. The 10y dip below 5% did not hold into Friday.",
+          "second_order": [
+            {
+              "sector": "SG REITs",
+              "effect": "The US 10y pinned near 5% keeps pressure on cap rates through SORA and global REIT spreads. A December hike would push SG funding costs higher again; any relief needs a sustained 10y below 5%.",
+              "direction": "down"
+            },
+            {
+              "sector": "USD vs SGD and Asian FX",
+              "effect": "A December hike priced in while MAS holds supports the USD, but DXY slipped 0.2% as US tech selling dented US-asset demand. Net flat.",
+              "direction": "mixed"
+            },
+            {
+              "sector": "Long-duration tech",
+              "effect": "AI capex funding worries (Meta) plus a 5% risk-free rate compress multiples, and haven buying of Treasuries comes out of equities.",
+              "direction": "down"
+            },
+            {
+              "sector": "US consumer → staples and value retail",
+              "effect": "Sentiment at 48, inflation expectations at 4.7% and mortgage rates at 7.32% squeeze real budgets, pushing more spending toward value channels (WMT, COST) and limiting branded price increases.",
+              "direction": "mixed"
+            }
+          ],
+          "lean": "bearish",
+          "strength": "weak",
+          "evidence": [
+            "H.15: 10y closed at 4.96 on 22 Oct but has not held below 5% (about 5.00 on 23 Oct)",
+            "CME October hike odds 7.2%; December about 78%; 100/100 economists expect a December hike",
+            "Claims 194k, 4-week average 197.75k: no labour-market recession signal",
+            "Brent $116.72 and UMich 1y inflation expectations at 4.7% point to more inflation ahead",
+            "Against the lean: TLT 81.34, +1.6% w/w and +6.4% off its 7 Oct 52w low of 76.43; the curve flattened to 2s10s +31bp"
+          ],
+          "consensus": [
+            "Fed holds on 28 Oct and hikes in December; an October hike is 'politically untenable' before the 3 Nov election (UBS)",
+            "Treasuries are the haven whenever the AI trade wobbles",
+            "Warsh has cut back forward guidance, so dissents and the press conference carry more signal than usual"
+          ],
+          "levels": [
+            {
+              "name": "US 10y Treasury yield (%)",
+              "ticker": "US10Y",
+              "last": 5.0,
+              "support": 4.95,
+              "resistance": 5.15,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            },
+            {
+              "name": "US 2y Treasury yield (%)",
+              "ticker": "US2Y",
+              "last": 4.69,
+              "support": 4.64,
+              "resistance": 4.81,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            },
+            {
+              "name": "iShares 20+ Year Treasury Bond ETF",
+              "ticker": "TLT",
+              "last": 81.34,
+              "support": 79.46,
+              "resistance": 81.92,
+              "low_52w": 76.43,
+              "high_52w": 92.17,
+              "your_band": null
+            }
+          ],
+          "flip_if": "Bullish for bonds if the 10y holds below 4.95% after the 28 Oct FOMC, if the statement or Warsh drops the December-hike bias, if September PCE or Q3 GDP (29 Oct) undershoot, or if Brent falls below $100. Stronger bearish if PCE runs hot, if there are hawkish dissents for an October hike, or if the 10y retakes 5.15%.",
+          "benchmark": {
+            "name": "iShares 20+ Year Treasury Bond ETF",
+            "ticker": "TLT",
+            "price_at_publish": 81.34
+          },
+          "check_on": "2027-01-25",
+          "result": null
+        },
+        {
+          "theme": "Macro",
+          "region": "SG",
+          "headline": "September core inflation eases to 2.0%, below the 2.3% consensus; SGD edges firmer and SGS 10y holds at 2.34%",
+          "what_happened": [
+            {
+              "text": "MAS/MTI: September core inflation 2.0% y/y (August 2.2%); headline 2.2% (August 2.3%). Core +0.1% m/m, headline +0.2% m/m. Core is expected to 'remain slightly elevated in the coming quarters' and ease more noticeably from mid-2027; imported inflation is expected to ease in 2027.",
+              "source": "https://english.news.cn/20261023/7ed4494f788149498c349721913be1ba/c.html"
+            },
+            {
+              "text": "Components: electricity and gas 8.7% (unchanged, July tariff rise), services 1.7% (from 2.0%), retail and other goods 1.2% (from 1.8%), private transport 7.1% (from 7.5%), food 2.4%. Forecasts unchanged: core 1.5–2.0% in 2026, 1.5–2.5% in 2027; risks tilted to the upside (energy, food, AI boom).",
+              "source": "https://www.asiaone.com/money/singapore-core-inflation-2026-september"
+            },
+            {
+              "text": "Core came in at 2.0% vs 2.3% expected; headline was also below expectations and the lowest since August's two-year high.",
+              "source": "https://tradingeconomics.com/singapore/inflation-cpi/news/594494"
+            },
+            {
+              "text": "USD/SGD mid-market 1.2781 on 23 Oct (1.2813 on 15 Oct). Week low 1.2772 (21 Oct). 90-day range 1.2641 (9 Sep) – 1.2922 (28 Jul).",
+              "source": "https://currencybeacon.com/rates/USD/SGD"
+            },
+            {
+              "text": "SGS 10y yield 2.34% on 22 Oct (MAS benchmark data), unchanged vs last brief; 52w range 1.82–2.61%.",
+              "source": "https://growbeansprout.com/quote/sg-10y-government-bond-yield"
+            },
+            {
+              "text": "MAS October Macroeconomic Review: Q2 retrenchments rose (manufacturing, financial services; restructuring cited); resident unemployment low; vacancies exceed unemployed; underlying wage growth easing to ~3.7% norm; hiring intentions firmed. No Q3 retrenchment data yet; MOM's Q3 advance release is expected around end-October. Q2 retrenchments were ~4,500, the highest since 2020.",
+              "source": "https://www.mas.gov.sg/-/media/mas-media-library/publications/macroeconomic-review/2026/oct/mroct26_chpt_4.pdf"
+            }
+          ],
+          "first_order": "Inflation surprised to the downside on both core and headline, which supports MAS's 14 Oct hold and makes another tightening in January less likely. The SGD did not weaken on it; USD/SGD drifted 0.25% lower over the week as the policy band keeps allowing gradual S$NEER appreciation. Local yields were flat. Labour data are still a lagging Q2 picture until MOM's Q3 release.",
+          "second_order": [
+            {
+              "sector": "SG REITs and property",
+              "effect": "A softer core print reduces the risk of further MAS tightening and keeps the SGS 10y anchored near 2.34%, which supports REIT funding costs ahead of the 29 Oct updates",
+              "direction": "up"
+            },
+            {
+              "sector": "SG banks",
+              "effect": "Lower tightening odds keep SORA soft, which pressures NIM",
+              "direction": "down"
+            },
+            {
+              "sector": "Q1 2027 electricity tariff → CPI",
+              "effect": "Electricity and gas are still +8.7% y/y. A Q1 2027 tariff set on October's Brent ~US$109–117 and spot LNG ~US$30 would re-accelerate this component and could reverse the core undershoot.",
+              "direction": "up"
+            },
+            {
+              "sector": "Car buyers / COE",
+              "effect": "Slowing core inflation and steady wages ease household budget strain at the margin, removing one of Norman's demand-shock gates for Cat B",
+              "direction": "up"
+            }
+          ],
+          "lean": "mixed",
+          "strength": "weak",
+          "evidence": [
+            "Core 2.0% vs 2.3% consensus, below August's 2.2% (MAS/MTI via Xinhua)",
+            "Headline 2.2% vs 2.3%; private transport 7.1% vs 7.5%",
+            "USD/SGD 1.2781 vs 1.2813 at last publish (−0.25%)",
+            "SGS 10y 2.34%, unchanged w/w",
+            "Labour: Q2 retrenchments highest since 2020 but employment still growing (MAS MR Oct 2026); Q3 retrenchment data not yet released"
+          ],
+          "consensus": [
+            "MAS stays on hold in January 2027; a softer core print reinforces that",
+            "The USD direction (Fed decision 28 Oct, December hike odds high) drives USD/SGD more than SG data in the near term",
+            "Q1 2027 electricity tariffs are expected to rise if oil stays above ~US$100"
+          ],
+          "levels": [
+            {
+              "name": "USD/SGD (23 Oct mid)",
+              "ticker": "USDSGD",
+              "last": 1.2781,
+              "support": 1.2772,
+              "resistance": 1.2823,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            },
+            {
+              "name": "SGS 10y yield (%)",
+              "ticker": "SGS10Y",
+              "last": 2.34,
+              "support": null,
+              "resistance": 2.448,
+              "low_52w": 1.82,
+              "high_52w": 2.61,
+              "your_band": null
+            },
+            {
+              "name": "SG MAS core inflation (% y/y, Sep)",
+              "ticker": "SG-CORECPI",
+              "last": 2.0,
+              "support": null,
+              "resistance": null,
+              "low_52w": null,
+              "high_52w": null,
+              "your_band": null
+            }
+          ],
+          "flip_if": "On USD/SGD: up (SGD weaker) if the Fed hikes or signals more on 28 Oct while MAS is seen on hold, or if MOM's Q3 data show retrenchments rising further. Down (SGD stronger) if October core CPI (late Nov) rebounds above 2.5% and revives January tightening odds, or the Fed signals a pause. A Q1 2027 tariff hike (announced ~end-Dec) would push the CPI read hawkish.",
+          "benchmark": {
+            "name": "USD/SGD",
+            "ticker": "USDSGD",
+            "price_at_publish": 1.2781
+          },
+          "check_on": "2027-01-25",
+          "result": null
+        }
+      ]
+    },
+    {
       "date": "2026-10-19",
       "summary": "The Strait of Hormuz nearly shut again: daily flows fell to 2.9m barrels on 11 Oct, Brent settled at US$109.86 and WTI went above US$100, with on-land stocks the lowest since 2016. That fed straight into US inflation (CPI 3.7%, PPI 6.3%, December hike odds 74%). The bigger market move was a separate one, though: AI-financing credit stress (CoreWeave CDS above 1,000bp) took SMH down 8.7% even as TSMC raised its year and ASML said it is sold out to 2028. Money rotated into staples (+5%) and Treasuries (10y down to 5.08%). In SG, MAS held instead of tightening, SGS yields fell and the STI steadied above its 9 Oct low.",
       "quiet": [
